@@ -18,7 +18,7 @@ class Parser:
             raise SyntaxError(f"Se esperaba {token_type}, pero se encontró {self.current_token[0]}")
 
     def parse(self):
-        return self.parse_block()
+        return self.parse_main_block()
 
     def parse_block(self):
         statements = []
@@ -43,6 +43,8 @@ class Parser:
             return self.parse_rest_statement()
         elif self.current_token[0] == 'IDENTIFIER': 
             return self.parse_assignment_or_expression()
+        elif self.current_token[0] == 'EYES':
+            return self.parse_eyes()
         else:
             return self.parse_expression()
 
@@ -58,11 +60,15 @@ class Parser:
         identifier = self.parse_identifier()
         if self.current_token[0] == 'ASSIGN':  # Si es una asignación (=>)
             self.advance()  # Avanzamos el token de asignación (=>)
-            expression = self.parse_expression()
+            if self.current_token[0] == 'EYES':  # Si es una función Eyes
+                expression = self.parse_eyes()
+            else:
+                expression = self.parse_expression()  # Otra expresión
             self.expect('SEMICOLON')  # Ahora se espera el punto y coma al final
             return BinaryOpNode(identifier, 'ASSIGN', expression)
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
+
 
     def parse_declaration(self):
         self.expect('HUNTER')
@@ -153,3 +159,21 @@ class Parser:
         name = self.current_token[1]
         self.advance()
         return IdentifierNode(name)
+
+    def parse_main_block(self):
+        self.expect('HUNTERSDREAM')
+        self.expect('LBRACE')
+        
+        statements = []
+        while self.current_token[0] != 'RBRACE': 
+            statements.append(self.parse_statement()) 
+        self.expect('RBRACE')
+
+        return BlockNode(statements)
+
+    def parse_eyes(self):
+        self.expect('EYES')
+        self.expect('LPAREN')  
+        prompt = self.parse_expression()  
+        self.expect('RPAREN') 
+        return FunctionCallNode('EYES', [prompt])

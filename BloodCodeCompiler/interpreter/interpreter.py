@@ -133,9 +133,15 @@ class Interpreter:
         return None
         
     def execute_function_call(self, node):
-        if node.identifier == 'PRAY':
+        if node.identifier == 'EYES':
+            prompt = self.execute(node.arguments[0]) 
+            return input(prompt)
+        elif node.identifier == 'PRAY':
             for expr in node.arguments:
                 result = self.execute(expr)
-                print(result)  # Imprimir la expresión evaluada
+                print(result)
         else:
             raise Exception(f"Función no soportada: {node.identifier}")
+
+    def run(self, ast):
+        return self.execute(ast)

@@ -5,20 +5,19 @@ from BloodCodeCompiler.interpreter.interpreter import Interpreter
 
 def main():
     code = '''
-{
-    Hunter a, b: maria => 0;
-    a => "Hello, world!";
-    Dream (b < 10) {
-        Pray(b);
-        b => b+1;
-    }
+HuntersDream {
+    Hunter name: Eileen; 
+    name => Eyes("Digite su nombre: ");
+    Pray("El nombre del usuario es: " + name);
 }
     '''
     
     lexer = Lexer(code)
     tokens = lexer.tokenize()
     parser = Parser(tokens)
+    print("Código fuente:")
     print(code)
+    
     try:
         ast = parser.parse()
         print("AST:", ast)

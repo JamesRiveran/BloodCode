@@ -1,6 +1,7 @@
 import re
 
 tokens = [
+    ('HUNTERSDREAM', r'HuntersDream '),
     ('NIGHTMARE', r'Nightmare'),
     ('DREAM', r'Dream'),
     ('HUNTER', r'Hunter'),
