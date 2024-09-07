@@ -1,26 +1,30 @@
-from BloodCodeCompiler.lexer import Lexer
+import re
+from BloodCodeCompiler.lexer.lexer import Lexer
+from BloodCodeCompiler.parser.parser import Parser
 
-code = '''
-Awaken {
-    Chalice health: Blood => 100;
-    Whisper "Welcome to Yharnam";
-    
-    Nightmare (health > 0) {
-        Whisper "You are alive and well.";
-    } HuntersMark (weapons == 0) {
-        Whisper "You have no weapons!";
-    } EternalRest {
-        Whisper "Danger is imminent!";
-    };
 
-    BloodMoon (health > 0) {
-        health => health + 20;
-    };
-};
-'''
+def main():
+    code = '''
+    {
+    Hunter c: Eileen;
+    c => "Hola mundo";
+    Hunter a, b: maria => 10;
+    Insight (b == 10){
+        a =>20;
+    }
+    }
+    '''
+    lexer = Lexer(code)
+    tokens = lexer.tokenize()
+    parser = Parser(tokens)
 
-lexer = Lexer(code)
-tokens = lexer.tokenize()
+    try:
+        ast = parser.parse()
+        print(ast)
+    except Exception as e:
+        print(f"Error: {e}")
 
-for token in tokens:
-    print(token)
+    print(code)
+if __name__ == "__main__":
+    main()
+ 

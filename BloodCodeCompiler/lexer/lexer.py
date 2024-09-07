@@ -1,5 +1,5 @@
 import re
-from BloodCodeCompiler.tokens import tokens
+from .tokens import tokens
 
 class Lexer:
     def __init__(self, code):
@@ -15,7 +15,7 @@ class Lexer:
                 match = regex.match(self.code, self.pos)
                 if match:
                     text = match.group(0)
-                    if token_type != 'WHITESPACE' and token_type != 'COMMENT':
+                    if token_type != 'WHITESPACE':
                         self.tokens.append((token_type, text))
                     self.pos = match.end(0)
                     break
