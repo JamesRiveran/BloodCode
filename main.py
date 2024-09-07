@@ -6,16 +6,20 @@ from BloodCodeCompiler.interpreter.interpreter import Interpreter
 def main():
     code = '''
 {
-    Hunter a, b: maria;
+    Hunter a, b: maria => 11;
     a => "Hello, world!";
-    Pray(a);
+    Insight (Vileblood(b != 10)) {
+        Pray ("B es igual a 10");
+    } Madness {
+        Pray ("B no es igual a 10");
+    }
 }
     '''
     
     lexer = Lexer(code)
     tokens = lexer.tokenize()
     parser = Parser(tokens)
-    
+    print(code)
     try:
         ast = parser.parse()
         print("AST:", ast)

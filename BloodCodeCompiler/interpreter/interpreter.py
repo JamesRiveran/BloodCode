@@ -44,6 +44,7 @@ class Interpreter:
     def execute_binary_op(self, node):
         left_value = self.execute(node.left)
         right_value = self.execute(node.right)
+
         if node.operator == 'PLUS':
             return left_value + right_value
         elif node.operator == 'MINUS':
@@ -52,12 +53,35 @@ class Interpreter:
             return left_value * right_value
         elif node.operator == 'DIVIDE':
             return left_value / right_value
+
         elif node.operator == 'ASSIGN':
             if isinstance(node.left, IdentifierNode):
                 self.context[node.left.name] = right_value
                 return right_value
             else:
                 raise Exception("Asignación no válida")
+
+        elif node.operator == 'EQUAL':
+            return left_value == right_value
+        elif node.operator == 'NOT':
+            return left_value != right_value
+        elif node.operator == 'GREATER':
+            return left_value > right_value
+        elif node.operator == 'LESS':
+            return left_value < right_value
+        elif node.operator == 'GREATEREQUAL':
+            return left_value >= right_value
+        elif node.operator == 'LESSEQUAL':
+            return left_value <= right_value
+
+        # Operadores lógicos
+        elif node.operator == 'BLOODBOND':  # AND lógico (&&)
+            return left_value and right_value
+        elif node.operator == 'OLDBLOOD':  # OR lógico (||)
+            return left_value or right_value
+        elif node.operator == 'VILEBLOOD':  # NOT lógico (!)
+            return not left_value
+
         else:
             raise Exception(f"Operador no soportado: {node.operator}")
 
