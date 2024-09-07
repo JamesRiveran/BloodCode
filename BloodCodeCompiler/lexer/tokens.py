@@ -21,6 +21,7 @@ tokens = [
     ('VILEBLOOD', r'Vileblood'),
     ('BLOODBOND', r'Bloodbond'),
     ('OLDBLOOD', r'OldBlood'),
+    ('ECHOES', r'Echoes'),
 
     ('GREATER', r'>'),
     ('LESS', r'<'),

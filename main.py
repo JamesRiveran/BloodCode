@@ -6,13 +6,20 @@ from BloodCodeCompiler.interpreter.interpreter import Interpreter
 def main():
     code = '''
 {
-    Hunter a, b: maria => 0;
-    a => "Hello, world!";
-    Dream (b < 10) {
-        Pray(b);
-        b => b+1;
+    GreatOnes suma(a: Maria, b: Maria): Maria {
+        Echoes (a + b);
     }
+
+    GreatOnes hello(): Rom {
+        Pray("hello hunter");
+    }
+    Hunter resultado: Maria;
+    resultado => suma(10,10);
+    hello();
+    hello();
+    Pray(resultado);
 }
+
     '''
     
     lexer = Lexer(code)

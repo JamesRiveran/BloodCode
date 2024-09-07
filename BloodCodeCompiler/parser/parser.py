@@ -1,4 +1,4 @@
-from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode
+from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode
 
 class Parser:
     def __init__(self, tokens):
@@ -31,6 +31,10 @@ class Parser:
     def parse_statement(self):
         if self.current_token[0] == 'HUNTER':
             return self.parse_declaration()
+        elif self.current_token[0] == 'GREATONES':
+            return self.parse_function_declaration()
+        elif self.current_token[0] == 'ECHOES': 
+            return self.parse_return_statement()
         elif self.current_token[0] == 'INSIGHT':
             return self.parse_if_statement()
         elif self.current_token[0] == 'NIGHTMARE':
@@ -39,12 +43,63 @@ class Parser:
             return self.parse_dream_loop()  
         elif self.current_token[0] == 'PRAY':
             return self.parse_pray()
+        elif self.current_token[0] == 'EYES':
+            return self.parse_eyes_statement()
         elif self.current_token[0] == 'REST':
             return self.parse_rest_statement()
         elif self.current_token[0] == 'IDENTIFIER': 
             return self.parse_assignment_or_expression()
         else:
             return self.parse_expression()
+
+    def parse_function_declaration(self):
+        self.expect('GREATONES')  # Reconocemos la palabra clave para la función
+        func_name = self.parse_identifier()  # Obtenemos el nombre de la función
+        self.expect('LPAREN')  # Abrimos paréntesis para los parámetros
+
+        # Parseamos los parámetros de la función
+        params = []
+        if self.current_token[0] != 'RPAREN':
+            params = self.parse_parameter_list()
+        self.expect('RPAREN')  # Cerramos paréntesis de los parámetros
+
+        self.expect('COLON')  # Esperamos el tipo de retorno
+        return_type = self.current_token[0]
+        self.advance()
+
+        # Parseamos el cuerpo de la función
+        block = self.parse_block()
+
+        return FunctionDeclarationNode(func_name, params, return_type, block)
+
+    def parse_parameter_list(self):
+        params = []
+        params.append(self.parse_parameter())
+        while self.current_token[0] == 'COMMA':
+            self.advance()
+            params.append(self.parse_parameter())
+        return params
+
+    def parse_parameter(self):
+        param_name = self.parse_identifier()
+        self.expect('COLON')
+        param_type = self.current_token[0]
+        self.advance()
+        return (param_name, param_type)
+
+    def parse_return_statement(self):
+        self.expect('ECHOES')  # Reconocer la palabra clave 'echoes'
+        expression = self.parse_expression()  # Parsear la expresión que sigue al 'echoes'
+        self.expect('SEMICOLON')  # Esperar el punto y coma al final
+        return ReturnNode(expression)  # Devolver un nodo de retorno
+
+    def parse_eyes_statement(self):
+        self.expect('EYES')  # Reconocemos el token 'EYES'
+        self.expect('LPAREN')
+        identifier = self.parse_identifier() 
+        self.expect('RPAREN')
+        self.expect('SEMICOLON')  # Se espera un punto y coma al final
+        return FunctionCallNode('EYES', [identifier])  
 
     def parse_dream_loop(self):
         self.expect('DREAM')
@@ -61,8 +116,17 @@ class Parser:
             expression = self.parse_expression()
             self.expect('SEMICOLON')  # Ahora se espera el punto y coma al final
             return BinaryOpNode(identifier, 'ASSIGN', expression)
+        elif self.current_token[0] == 'LPAREN':  # Si es una llamada a función
+            self.advance()  # Consumir el '('
+            arguments = []
+            if self.current_token[0] != 'RPAREN':  # Si no es ')', parsear los argumentos
+                arguments = self.parse_argument_list()
+            self.expect('RPAREN')  # Consumir el ')'
+            self.expect('SEMICOLON')
+            return FunctionCallNode(identifier, arguments)
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
+
 
     def parse_declaration(self):
         self.expect('HUNTER')
@@ -99,14 +163,22 @@ class Parser:
     def parse_nightmare_loop(self):
         self.expect('NIGHTMARE')
         self.expect('LPAREN')
-        init = self.parse_expression()
-        self.expect('SEMICOLON')
+        if self.current_token[0] == 'HUNTER':
+            init = self.parse_declaration()  
+        else:
+            init = self.parse_assignment_or_expression()  
+
+
         condition = self.parse_expression()
         self.expect('SEMICOLON')
-        increment = self.parse_expression()
+
+        increment = self.parse_assignment_or_expression()
         self.expect('RPAREN')
+
         block = self.parse_block()
+
         return LoopNode(init, condition, increment, block)
+
 
     def parse_pray(self):
         self.expect('PRAY')
@@ -140,7 +212,18 @@ class Parser:
             self.advance()
             return StringNode(value)
         elif self.current_token[0] == 'IDENTIFIER':
-            return self.parse_identifier()
+            identifier = self.parse_identifier()
+            
+            # Verificar si es una llamada a función
+            if self.current_token[0] == 'LPAREN':
+                self.advance()  # Consumir el '('
+                arguments = []
+                if self.current_token[0] != 'RPAREN':  # Si no es ')', parsear los argumentos
+                    arguments = self.parse_argument_list()
+                self.expect('RPAREN')  # Consumir el ')'
+                return FunctionCallNode(identifier, arguments)  # Retornar el nodo de llamada a función
+            else:
+                return identifier
         elif self.current_token[0] == 'LPAREN':
             self.advance()
             expr = self.parse_expression()
@@ -148,6 +231,16 @@ class Parser:
             return expr
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
+
+
+        
+    def parse_argument_list(self):
+        arguments = [self.parse_expression()]  # Parsear el primer argumento
+        while self.current_token[0] == 'COMMA':  # Parsear el resto de los argumentos
+            self.advance()
+            arguments.append(self.parse_expression())
+        return arguments
+
 
     def parse_identifier(self):
         name = self.current_token[1]

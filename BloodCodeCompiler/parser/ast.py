@@ -81,3 +81,14 @@ class RestNode(ASTNode):
 
     def __repr__(self):
         return "Rest()"
+
+class FunctionDeclarationNode(ASTNode):
+    def __init__(self, name, parameters, return_type, block):
+        self.name = name  # Nombre de la función
+        self.parameters = parameters  # Lista de parámetros (nombre y tipo)
+        self.return_type = return_type  # Tipo de retorno de la función
+        self.block = block  # Bloque de código que conforma el cuerpo de la función
+
+class ReturnNode(ASTNode):
+    def __init__(self, expression):
+        self.expression = expression  # Expresión que debe retornar la función
