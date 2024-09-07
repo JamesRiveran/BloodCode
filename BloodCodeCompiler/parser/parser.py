@@ -35,14 +35,24 @@ class Parser:
             return self.parse_if_statement()
         elif self.current_token[0] == 'NIGHTMARE':
             return self.parse_nightmare_loop()
+        elif self.current_token[0] == 'DREAM':
+            return self.parse_dream_loop()  
         elif self.current_token[0] == 'PRAY':
             return self.parse_pray()
         elif self.current_token[0] == 'REST':
             return self.parse_rest_statement()
-        elif self.current_token[0] == 'IDENTIFIER':  # Manejar identificador para asignaciones
+        elif self.current_token[0] == 'IDENTIFIER': 
             return self.parse_assignment_or_expression()
         else:
             return self.parse_expression()
+
+    def parse_dream_loop(self):
+        self.expect('DREAM')
+        self.expect('LPAREN')
+        condition = self.parse_expression()
+        self.expect('RPAREN')
+        block = self.parse_block()  
+        return LoopNode(None, condition, None, block)  
 
     def parse_assignment_or_expression(self):
         identifier = self.parse_identifier()
