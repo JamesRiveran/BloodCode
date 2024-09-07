@@ -36,7 +36,7 @@ class Parser:
         elif self.current_token[0] == 'NIGHTMARE':
             return self.parse_nightmare_loop()
         elif self.current_token[0] == 'PRAY':
-            return self.parse_echoes_statement()
+            return self.parse_pray()
         elif self.current_token[0] == 'REST':
             return self.parse_rest_statement()
         elif self.current_token[0] == 'IDENTIFIER':  # Manejar identificador para asignaciones
@@ -98,11 +98,13 @@ class Parser:
         block = self.parse_block()
         return LoopNode(init, condition, increment, block)
 
-    def parse_echoes_statement(self):
+    def parse_pray(self):
         self.expect('PRAY')
-        expression = self.parse_expression()
+        self.expect('LPAREN')
+        expression = self.parse_expression()  
+        self.expect('RPAREN')
         self.expect('SEMICOLON')
-        return expression
+        return FunctionCallNode('PRAY', [expression])
 
     def parse_rest_statement(self):
         self.expect('REST')
