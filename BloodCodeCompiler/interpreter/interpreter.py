@@ -1,7 +1,8 @@
 from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode, ArrayNode
 
 class Interpreter:
-    def __init__(self):
+    def __init__(self, env):
+        self.env = env
         self.context = {}  # Contexto global
         self.functions = {}  # Diccionario para almacenar funciones
 
@@ -223,10 +224,23 @@ class Interpreter:
         
         elif node.identifier == 'EYES':
             for var in node.arguments:
-                value = input(f"Ingrese valor para {var.name}: ")  # Pedir entrada al usuario
-                self.context[var.name] = value
+                var_type = self.env.get_variable_type(var.name)
+                value = input(f"Ingrese valor para {var.name}: ")
+                
+                # Validar el tipo de la variable y convertir el valor ingresado
+                if var_type == 'MARIA':  # Número
+                    try:
+                        value = int(value)  # Convertir el valor ingresado a entero
+                    except ValueError:
+                        raise Exception(f"Error: Se esperaba un valor numérico para '{var.name}'")
+                elif var_type == 'EILEEN':  # Cadena
+                    value = str(value)
+                else:
+                    raise Exception(f"Tipo no soportado para 'Eyes': {var_type}")
+                
+                self.context[var.name] = value  # Guardar el valor en el contexto
             return None
-        
+            
         # Manejar otras funciones
         func = self.functions.get(node.identifier.name)
         if func is None:

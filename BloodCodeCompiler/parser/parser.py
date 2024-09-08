@@ -125,13 +125,26 @@ class Parser:
             else:
                 return BinaryOpNode(identifier, 'INDEX', index)
 
-        elif self.current_token[0] == 'ASSIGN':  # Si es una asignación a una variable normal
+        # Verificar si es una llamada a función (ejemplo: hello())
+        elif self.current_token[0] == 'LPAREN':
+            self.advance()  # Consumimos el '('
+            arguments = []
+            if self.current_token[0] != 'RPAREN':  # Parsear los argumentos si existen
+                arguments = self.parse_argument_list()
+            self.expect('RPAREN')  # Consumimos el ')'
+            self.expect('SEMICOLON')  # Esperamos el punto y coma al final
+            return FunctionCallNode(identifier, arguments)
+
+        # Verificar si es una asignación a una variable normal (ejemplo: abc => 10)
+        elif self.current_token[0] == 'ASSIGN':
             self.advance()  # Consumimos el '=>'
             expression = self.parse_expression()
-            self.expect('SEMICOLON')  # Ahora se espera el punto y coma al final
+            self.expect('SEMICOLON')  # Esperamos el punto y coma al final
             return BinaryOpNode(identifier, 'ASSIGN', expression)
+
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
+
 
 
 
