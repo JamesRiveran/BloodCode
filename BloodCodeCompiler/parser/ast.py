@@ -81,3 +81,18 @@ class RestNode(ASTNode):
 
     def __repr__(self):
         return "Rest()"
+
+class BooleanNode(ASTNode):
+    def __init__(self, value):
+        self.value = value
+
+    def __repr__(self):
+        return f"Boolean({self.value})"
+        
+class UnaryOpNode(ASTNode):
+    def __init__(self, operator, operand):
+        self.operator = operator
+        self.operand = operand
+
+    def __repr__(self):
+        return f"UnaryOp({self.operator}, {self.operand})"

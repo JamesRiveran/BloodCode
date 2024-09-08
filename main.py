@@ -6,10 +6,23 @@ from BloodCodeCompiler.interpreter.interpreter import Interpreter
 def main():
     code = '''
 HuntersDream {
-    Hunter name: Eileen; 
-    name => Eyes("Digite su nombre: ");
-    Pray("El nombre del usuario es: " + name);
+    Hunter a: Blood => true;
+    Hunter b: Blood => false;
+
+    Pray(a Bloodbond a);
+    Pray(a Bloodbond b);
+    Pray(b Bloodbond a);
+    Pray(b Bloodbond b);
+
+    Pray(a OldBlood a); 
+    Pray(a OldBlood b);
+    Pray(b OldBlood a);
+    Pray(b OldBlood b);
+
+    Pray(Vileblood a);
+    Pray(Vileblood b);    
 }
+
     '''
     
     lexer = Lexer(code)
@@ -20,7 +33,7 @@ HuntersDream {
     
     try:
         ast = parser.parse()
-        print("AST:", ast)
+        #print("AST:", ast)
         
         # Ejecutar el AST con el intérprete
         interpreter = Interpreter()

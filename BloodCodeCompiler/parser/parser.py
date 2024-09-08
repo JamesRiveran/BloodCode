@@ -1,4 +1,4 @@
-from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode
+from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode,UnaryOpNode
 
 class Parser:
     def __init__(self, tokens):
@@ -129,15 +129,21 @@ class Parser:
 
     def parse_expression(self):
         left = self.parse_term()
-        while self.current_token[0] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EQUAL', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL', 'NOT', 'BLOODBOND', 'OLDBLOOD']:
+        while self.current_token[0] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EQUAL', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL', 'NOT', 'BLOODBOND', 'OLDBLOOD', 'VILEBLOOD']:
             operator = self.current_token[0]
             self.advance()
             right = self.parse_term()
             left = BinaryOpNode(left, operator, right)
-        return left  # Eliminamos el punto y coma aquí, porque no siempre es necesario.
+        return left
+
 
     def parse_term(self):
-        if self.current_token[0] == 'NUMBER':
+        if self.current_token[0] == 'VILEBLOOD':  # Si es un operador unario
+            operator = self.current_token[0]
+            self.advance()
+            expr = self.parse_term()  # Aplicar el operador unario al siguiente término
+            return UnaryOpNode(operator, expr)
+        elif self.current_token[0] == 'NUMBER':
             value = self.current_token[1]
             self.advance()
             return NumberNode(value)
@@ -145,6 +151,12 @@ class Parser:
             value = self.current_token[1]
             self.advance()
             return StringNode(value)
+        elif self.current_token[0] == 'TRUE':
+            self.advance()
+            return BooleanNode(True)
+        elif self.current_token[0] == 'FALSE':
+            self.advance()
+            return BooleanNode(False)
         elif self.current_token[0] == 'IDENTIFIER':
             return self.parse_identifier()
         elif self.current_token[0] == 'LPAREN':
@@ -154,6 +166,7 @@ class Parser:
             return expr
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
+
 
     def parse_identifier(self):
         name = self.current_token[1]

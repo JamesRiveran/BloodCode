@@ -1,4 +1,4 @@
-from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode
+from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode, UnaryOpNode
 class Interpreter:
     def __init__(self):
         self.context = {}
@@ -14,6 +14,8 @@ class Interpreter:
             return node.value
         elif isinstance(node, StringNode):
             return node.value
+        elif isinstance(node, BooleanNode): 
+            return node.value
         elif isinstance(node, IdentifierNode):
             return self.context.get(node.name, None)
         elif isinstance(node, IfStatementNode):
@@ -22,6 +24,8 @@ class Interpreter:
             return self.execute_loop(node)
         elif isinstance(node, FunctionCallNode):
             return self.execute_function_call(node)
+        elif isinstance(node, UnaryOpNode):
+            return self.execute_unary_op(node)
         elif isinstance(node, RestNode):
             return None
         else:
@@ -106,7 +110,7 @@ class Interpreter:
         elif node.operator == 'OLDBLOOD':  # OR lógico (||)
             return left_value or right_value
         elif node.operator == 'VILEBLOOD':  # NOT lógico (!)
-            return not left_value
+            return not self.execute(node.right)
 
         else:
             raise Exception(f"Operador no soportado: {node.operator}")
@@ -142,6 +146,14 @@ class Interpreter:
                 print(result)
         else:
             raise Exception(f"Función no soportada: {node.identifier}")
+
+    def execute_unary_op(self, node):
+        operand_value = self.execute(node.operand)
+
+        if node.operator == 'VILEBLOOD':  # Negación lógica
+            return not operand_value
+        else:
+            raise Exception(f"Operador unario no soportado: {node.operator}")
 
     def run(self, ast):
         return self.execute(ast)

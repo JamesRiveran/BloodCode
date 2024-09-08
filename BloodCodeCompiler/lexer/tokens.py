@@ -1,5 +1,3 @@
-import re
-
 tokens = [
     ('HUNTERSDREAM', r'HuntersDream '),
     ('NIGHTMARE', r'Nightmare'),
@@ -9,7 +7,12 @@ tokens = [
     ('GREATONES', r'GreatOnes'),
     ('DJURA', r'Djura'),
     ('EILEEN', r'Eileen'),
-    ('BLOOD', r'Blood'),
+    ('TRUE', r'true'),
+    ('FALSE', r'false'),
+    ('BLOODBOND', r'Bloodbond'),  
+    ('OLDBLOOD', r'OldBlood'),    
+    ('VILEBLOOD', r'Vileblood'),  
+    ('BLOOD', r'Blood'),        
     ('MARIA', r'Maria'),
     ('GEHRMAN', r'Gehrman'),
     ('ROM', r'Rom'),
@@ -19,9 +22,6 @@ tokens = [
     ('MADNESS', r'Madness'),
     ('EYES', r'Eyes'),
     ('PRAY', r'Pray'),
-    ('VILEBLOOD', r'Vileblood'),
-    ('BLOODBOND', r'Bloodbond'),
-    ('OLDBLOOD', r'OldBlood'),
 
     ('GREATER', r'>'),
     ('LESS', r'<'),
@@ -51,6 +51,3 @@ tokens = [
     ('STRING', r'"[^"]*"'),
     ('IDENTIFIER', r'[a-zA-Z_]\w*'),
 ]
-
-# Compile tokens with re.IGNORECASE to ignore case sensitivity
-compiled_tokens = [(name, re.compile(pattern, re.IGNORECASE)) for name, pattern in tokens]
