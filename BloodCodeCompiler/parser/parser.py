@@ -1,9 +1,9 @@
 from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode, UnaryOpNode, FunctionDeclarationNode, ReturnNode, ArrayNode
 
 class Parser:
-    def __init__(self, tokens):https://github.com/JamesRiveran/BloodCode/pull/1/conflict?name=BloodCodeCompiler%252Fparser%252Fparser.py&ancestor_oid=80d9a6e990a0dbf479189cfdf2d73c6456493f92&base_oid=8a4026858b47d6dc069532d64c1bbf6e206427f6&head_oid=8e07bf2c525be310cf3e91f813395624352ad70a
+    def __init__(self, tokens):
         self.tokens = tokens
-        self.pos = 0dev
+        self.pos = 0
         self.current_token = self.tokens[self.pos]
 
     def advance(self):
