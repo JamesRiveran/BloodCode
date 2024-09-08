@@ -5,23 +5,10 @@ from BloodCodeCompiler.interpreter.interpreter import Interpreter
 
 def main():
     code = '''
-HuntersDream {
-    Hunter a: Blood => true;
-    Hunter b: Blood => false;
-
-    Pray(a Bloodbond a);
-    Pray(a Bloodbond b);
-    Pray(b Bloodbond a);
-    Pray(b Bloodbond b);
-
-    Pray(a OldBlood a); 
-    Pray(a OldBlood b);
-    Pray(b OldBlood a);
-    Pray(b OldBlood b);
-
-    Pray(Vileblood a);
-    Pray(Vileblood b);    
-}
+    HuntersDream {
+        Hunter x: Blood => 8 + (15 / (3 + 2) - 4 * 2) * (6 + 8 / (3 - 1)) - 7 * (9 - 5 / (8 - 6));
+        Pray(x); 
+    }
 
     '''
     

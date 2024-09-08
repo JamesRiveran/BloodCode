@@ -1,4 +1,5 @@
 from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode, UnaryOpNode
+
 class Interpreter:
     def __init__(self):
         self.context = {}
@@ -57,31 +58,16 @@ class Interpreter:
 
         # Operaciones aritméticas y de concatenación
         if node.operator == 'PLUS':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value + right_value  # Suma si ambos son números
-            elif isinstance(left_value, str) and isinstance(right_value, str):
-                return left_value + right_value  # Concatenación si ambos son cadenas
-            else:
-                raise Exception(f"Error de tipos: No se puede sumar {type(left_value)} y {type(right_value)}")
-        
+            return left_value + right_value
         elif node.operator == 'MINUS':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value - right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede restar {type(left_value)} y {type(right_value)}")
-        
+            return left_value - right_value
         elif node.operator == 'MULTIPLY':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value * right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede multiplicar {type(left_value)} y {type(right_value)}")
-        
+            return left_value * right_value
         elif node.operator == 'DIVIDE':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value / right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede dividir {type(left_value)} y {type(right_value)}")
-        
+            if right_value == 0:
+                raise ValueError("División por cero")
+            return left_value / right_value
+
         # Asignación
         elif node.operator == 'ASSIGN':
             if isinstance(node.left, IdentifierNode):
@@ -115,6 +101,12 @@ class Interpreter:
         else:
             raise Exception(f"Operador no soportado: {node.operator}")
 
+    def execute_unary_op(self, node):
+        operand_value = self.execute(node.operand)
+        if node.operator == 'VILEBLOOD':  # Negación lógica
+            return not operand_value
+        else:
+            raise Exception(f"Operador unario no soportado: {node.operator}")
 
     def execute_if_statement(self, node):
         condition_value = self.execute(node.condition)
@@ -135,7 +127,7 @@ class Interpreter:
                 self.execute(node.increment)  # Incremento solo si existe (para NIGHTMARE)
         
         return None
-        
+
     def execute_function_call(self, node):
         if node.identifier == 'EYES':
             prompt = self.execute(node.arguments[0]) 
@@ -146,14 +138,6 @@ class Interpreter:
                 print(result)
         else:
             raise Exception(f"Función no soportada: {node.identifier}")
-
-    def execute_unary_op(self, node):
-        operand_value = self.execute(node.operand)
-
-        if node.operator == 'VILEBLOOD':  # Negación lógica
-            return not operand_value
-        else:
-            raise Exception(f"Operador unario no soportado: {node.operator}")
 
     def run(self, ast):
         return self.execute(ast)

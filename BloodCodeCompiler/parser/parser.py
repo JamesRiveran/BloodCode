@@ -1,4 +1,4 @@
-from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode,UnaryOpNode
+from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode, UnaryOpNode
 
 class Parser:
     def __init__(self, tokens):
@@ -69,7 +69,6 @@ class Parser:
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
 
-
     def parse_declaration(self):
         self.expect('HUNTER')
         identifier_list = self.parse_identifier_list()
@@ -128,25 +127,76 @@ class Parser:
         return RestNode()
 
     def parse_expression(self):
-        left = self.parse_term()
-        while self.current_token[0] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EQUAL', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL', 'NOT', 'BLOODBOND', 'OLDBLOOD', 'VILEBLOOD']:
+        return self.parse_logical_or()
+
+    def parse_logical_or(self):
+        node = self.parse_logical_and()
+        while self.current_token[0] == 'OLDBLOOD':
             operator = self.current_token[0]
             self.advance()
-            right = self.parse_term()
-            left = BinaryOpNode(left, operator, right)
-        return left
+            right = self.parse_logical_and()
+            node = BinaryOpNode(node, operator, right)
+        return node
 
-
-    def parse_term(self):
-        if self.current_token[0] == 'VILEBLOOD':  # Si es un operador unario
+    def parse_logical_and(self):
+        node = self.parse_equality()
+        while self.current_token[0] == 'BLOODBOND':
             operator = self.current_token[0]
             self.advance()
-            expr = self.parse_term()  # Aplicar el operador unario al siguiente término
-            return UnaryOpNode(operator, expr)
-        elif self.current_token[0] == 'NUMBER':
+            right = self.parse_equality()
+            node = BinaryOpNode(node, operator, right)
+        return node
+
+    def parse_equality(self):
+        node = self.parse_relational()
+        while self.current_token[0] in ('EQUAL', 'NOT'):
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_relational()
+            node = BinaryOpNode(node, operator, right)
+        return node
+
+    def parse_relational(self):
+        node = self.parse_additive()
+        while self.current_token[0] in ('GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL'):
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_additive()
+            node = BinaryOpNode(node, operator, right)
+        return node
+
+    def parse_additive(self):
+        node = self.parse_multiplicative()
+        while self.current_token[0] in ('PLUS', 'MINUS'):
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_multiplicative()
+            node = BinaryOpNode(node, operator, right)
+        return node
+
+    def parse_multiplicative(self):
+        node = self.parse_unary()
+        while self.current_token[0] in ('MULTIPLY', 'DIVIDE'):
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_unary()
+            node = BinaryOpNode(node, operator, right)
+        return node
+
+    def parse_unary(self):
+        if self.current_token[0] == 'VILEBLOOD':
+            operator = self.current_token[0]
+            self.advance()
+            operand = self.parse_unary()
+            return UnaryOpNode(operator, operand)
+        else:
+            return self.parse_primary()
+
+    def parse_primary(self):
+        if self.current_token[0] == 'NUMBER':
             value = self.current_token[1]
             self.advance()
-            return NumberNode(value)
+            return NumberNode(float(value))
         elif self.current_token[0] == 'STRING':
             value = self.current_token[1]
             self.advance()
@@ -166,7 +216,6 @@ class Parser:
             return expr
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
-
 
     def parse_identifier(self):
         name = self.current_token[1]
