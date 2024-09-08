@@ -8,27 +8,18 @@ from BloodCodeCompiler.semantic_analyzer.TypeEnviroment import TypeEnvironment
 
 def main():
     code = '''
-    {
-        GreatOnes sum(a: Maria, num2:Maria): Maria {
-            Pray("hello hunter");
-        }
-        GreatOnes hello(): Rom {
-            Pray("hello hunter");
-        }
-        Hunter a: Maria => 5;
-        Hunter b: Maria => 10;
-        Eyes(b);
-        Pray(b);
-        Pray(a);
-        Pray(sum(10,10));
-        hello();
+    HuntersDream {
+        Hunter x: Blood => 8 + (15 / (3 + 2) - 4 * 2) * (6 + 8 / (3 - 1)) - 7 * (9 - 5 / (8 - 6));
+        Pray(x); 
     }
     '''
     env = TypeEnvironment();
     lexer = Lexer(code)
     tokens = lexer.tokenize()
     parser = Parser(tokens)
+    print("Código fuente:")
     print(code)
+    
     try:
         ast = parser.parse()
         print("AST:", ast)

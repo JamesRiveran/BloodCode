@@ -1,4 +1,5 @@
-from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode, ArrayNode
+from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode,BooleanNode, UnaryOpNode, FunctionDeclarationNode, ReturnNode, ArrayNode
+
 
 class Interpreter:
     def __init__(self, env):
@@ -17,6 +18,8 @@ class Interpreter:
             return int(node.value) if node.value.isdigit() else float(node.value)
         elif isinstance(node, StringNode):
             return node.value
+        elif isinstance(node, BooleanNode): 
+            return node.value
         elif isinstance(node, IdentifierNode):
             return self.context.get(node.name, None)
         elif isinstance(node, IfStatementNode):
@@ -25,6 +28,8 @@ class Interpreter:
             return self.execute_loop(node)
         elif isinstance(node, FunctionCallNode):
             return self.execute_function_call(node)
+        elif isinstance(node, UnaryOpNode):
+            return self.execute_unary_op(node)
         elif isinstance(node, FunctionDeclarationNode):
             return self.execute_function_declaration(node)
         elif isinstance(node, RestNode):
@@ -134,25 +139,15 @@ class Interpreter:
                 return left_value + right_value  # Concatenación si ambos son cadenas
             else:
                 raise Exception(f"Error de tipos: No se puede sumar {type(left_value)} y {type(right_value)}")
-        
         elif node.operator == 'MINUS':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value - right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede restar {type(left_value)} y {type(right_value)}")
-        
+            return left_value - right_value
         elif node.operator == 'MULTIPLY':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value * right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede multiplicar {type(left_value)} y {type(right_value)}")
-        
+            return left_value * right_value
         elif node.operator == 'DIVIDE':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value / right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede dividir {type(left_value)} y {type(right_value)}")
-        
+            if right_value == 0:
+                raise ValueError("División por cero")
+            return left_value / right_value
+
         # Asignación
         elif node.operator == 'ASSIGN':
             if isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':  # Asignación a un elemento del vector
@@ -189,11 +184,18 @@ class Interpreter:
         elif node.operator == 'OLDBLOOD':  # OR lógico (||)
             return left_value or right_value
         elif node.operator == 'VILEBLOOD':  # NOT lógico (!)
-            return not left_value
+            return not self.execute(node.right)
 
         else:
             raise Exception(f"Operador no soportado: {node.operator}")
 
+    def execute_unary_op(self, node):
+        operand_value = self.execute(node.operand)
+        if node.operator == 'VILEBLOOD':  # Negación lógica
+            return not operand_value
+        else:
+            raise Exception(f"Operador unario no soportado: {node.operator}")
+            
     def execute_if_statement(self, node):
         condition_value = self.execute(node.condition)
         if condition_value:
@@ -213,7 +215,7 @@ class Interpreter:
                 self.execute(node.increment)  # Incremento solo si existe (para NIGHTMARE)
         
         return None
-        
+
     def execute_function_call(self, node):
         # Manejar la función especial PRAY
         if node.identifier == 'PRAY':

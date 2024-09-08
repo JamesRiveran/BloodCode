@@ -1,9 +1,9 @@
-from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode, ArrayNode
+from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode, UnaryOpNode, FunctionDeclarationNode, ReturnNode, ArrayNode
 
 class Parser:
-    def __init__(self, tokens):
+    def __init__(self, tokens):https://github.com/JamesRiveran/BloodCode/pull/1/conflict?name=BloodCodeCompiler%252Fparser%252Fparser.py&ancestor_oid=80d9a6e990a0dbf479189cfdf2d73c6456493f92&base_oid=8a4026858b47d6dc069532d64c1bbf6e206427f6&head_oid=8e07bf2c525be310cf3e91f813395624352ad70a
         self.tokens = tokens
-        self.pos = 0
+        self.pos = 0dev
         self.current_token = self.tokens[self.pos]
 
     def advance(self):
@@ -18,7 +18,7 @@ class Parser:
             raise SyntaxError(f"Se esperaba {token_type}, pero se encontró {self.current_token[0]}")
 
     def parse(self):
-        return self.parse_block()
+        return self.parse_main_block()
 
     def parse_block(self):
         statements = []
@@ -49,6 +49,8 @@ class Parser:
             return self.parse_rest_statement()
         elif self.current_token[0] == 'IDENTIFIER': 
             return self.parse_assignment_or_expression()
+        elif self.current_token[0] == 'EYES':
+            return self.parse_eyes()
         else:
             return self.parse_expression()
 
@@ -119,7 +121,7 @@ class Parser:
             self.expect('RBRACKET')  # Consumimos el ']'
             if self.current_token[0] == 'ASSIGN':  # Si es una asignación (=>)
                 self.advance()  # Consumimos el '=>'
-                expression = self.parse_expression()
+                expression = self.parse_expression()  # Parseamos la expresión
                 self.expect('SEMICOLON')  # Esperamos el punto y coma al final
                 return BinaryOpNode(BinaryOpNode(identifier, 'INDEX', index), 'ASSIGN', expression)
             else:
@@ -135,18 +137,18 @@ class Parser:
             self.expect('SEMICOLON')  # Esperamos el punto y coma al final
             return FunctionCallNode(identifier, arguments)
 
-        # Verificar si es una asignación a una variable normal (ejemplo: abc => 10)
-        elif self.current_token[0] == 'ASSIGN':
+        # Verificar si es una asignación (ejemplo: abc => 10 o Eyes(b))
+        elif self.current_token[0] == 'ASSIGN':  # Si es una asignación (=>)
             self.advance()  # Consumimos el '=>'
-            expression = self.parse_expression()
+            if self.current_token[0] == 'EYES':  # Si es una función Eyes
+                expression = self.parse_eyes()  # Parseamos la llamada a Eyes
+            else:
+                expression = self.parse_expression()  # Parseamos una expresión normal
             self.expect('SEMICOLON')  # Esperamos el punto y coma al final
             return BinaryOpNode(identifier, 'ASSIGN', expression)
 
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
-
-
-
 
     def parse_declaration(self):
         self.expect('HUNTER')
@@ -235,26 +237,91 @@ class Parser:
             self.expect('RBRACKET')  # Consumimos el ']'
             return ArrayNode(elements)  # Devolvemos un ArrayNode en lugar de una lista de Python
 
-        # El resto del código de `parse_expression` maneja números, operadores, identificadores, etc.
-        left = self.parse_term()
-        while self.current_token[0] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EQUAL', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL', 'NOT', 'BLOODBOND', 'OLDBLOOD']:
+        # Si no es una lista, tratamos la expresión según la jerarquía lógica
+        return self.parse_logical_or()  # Comenzamos con la operación lógica más alta
+
+    def parse_logical_or(self):
+        node = self.parse_logical_and()
+        while self.current_token[0] == 'OLDBLOOD':  # Operador OR
             operator = self.current_token[0]
             self.advance()
-            right = self.parse_term()
-            left = BinaryOpNode(left, operator, right)
-        return left
+            right = self.parse_logical_and()
+            node = BinaryOpNode(node, operator, right)
+        return node
 
+    def parse_logical_and(self):
+        node = self.parse_equality()
+        while self.current_token[0] == 'BLOODBOND':  # Operador AND
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_equality()
+            node = BinaryOpNode(node, operator, right)
+        return node
 
+    def parse_equality(self):
+        node = self.parse_relational()
+        while self.current_token[0] in ('EQUAL', 'NOT'):  # Operadores de igualdad y desigualdad
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_relational()
+            node = BinaryOpNode(node, operator, right)
+        return node
 
-    def parse_term(self):
+    def parse_relational(self):
+        node = self.parse_additive()
+        while self.current_token[0] in ('GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL'):  # Operadores relacionales
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_additive()
+            node = BinaryOpNode(node, operator, right)
+        return node
+
+    def parse_additive(self):
+        node = self.parse_multiplicative()
+        while self.current_token[0] in ('PLUS', 'MINUS'):  # Operadores de suma y resta
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_multiplicative()
+            node = BinaryOpNode(node, operator, right)
+        return node
+
+    def parse_multiplicative(self):
+        node = self.parse_unary()
+        while self.current_token[0] in ('MULTIPLY', 'DIVIDE'):  # Operadores de multiplicación y división
+            operator = self.current_token[0]
+            self.advance()
+            right = self.parse_unary()
+            node = BinaryOpNode(node, operator, right)
+        return node
+
+    def parse_unary(self):
+        if self.current_token[0] == 'VILEBLOOD':  # Operador lógico NOT
+            operator = self.current_token[0]
+            self.advance()
+            operand = self.parse_unary()
+            return UnaryOpNode(operator, operand)
+        else:
+            return self.parse_primary()
+
+    def parse_primary(self):
+        # Aquí iría la lógica para manejar números, identificadores, y otros valores primarios
+        return self.parse_term()
+
+    def parse_primary(self):
         if self.current_token[0] == 'NUMBER':
             value = self.current_token[1]
             self.advance()
-            return NumberNode(value)
+            return NumberNode(float(value))
         elif self.current_token[0] == 'STRING':
             value = self.current_token[1]
             self.advance()
             return StringNode(value)
+        elif self.current_token[0] == 'TRUE':
+            self.advance()
+            return BooleanNode(True)
+        elif self.current_token[0] == 'FALSE':
+            self.advance()
+            return BooleanNode(False)
         elif self.current_token[0] == 'IDENTIFIER':
             identifier = self.parse_identifier()
 
@@ -299,3 +366,21 @@ class Parser:
         name = self.current_token[1]
         self.advance()
         return IdentifierNode(name)
+
+    def parse_main_block(self):
+        self.expect('HUNTERSDREAM')
+        self.expect('LBRACE')
+        
+        statements = []
+        while self.current_token[0] != 'RBRACE': 
+            statements.append(self.parse_statement()) 
+        self.expect('RBRACE')
+
+        return BlockNode(statements)
+
+    def parse_eyes(self):
+        self.expect('EYES')
+        self.expect('LPAREN')  
+        prompt = self.parse_expression()  
+        self.expect('RPAREN') 
+        return FunctionCallNode('EYES', [prompt])
