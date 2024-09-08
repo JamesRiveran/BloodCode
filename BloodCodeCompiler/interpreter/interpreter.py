@@ -1,4 +1,4 @@
-from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode
+from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode, ArrayNode
 
 class Interpreter:
     def __init__(self):
@@ -13,7 +13,7 @@ class Interpreter:
         elif isinstance(node, BinaryOpNode):
             return self.execute_binary_op(node)
         elif isinstance(node, NumberNode):
-            return node.value
+            return int(node.value) if node.value.isdigit() else float(node.value)
         elif isinstance(node, StringNode):
             return node.value
         elif isinstance(node, IdentifierNode):
@@ -28,6 +28,8 @@ class Interpreter:
             return self.execute_function_declaration(node)
         elif isinstance(node, RestNode):
             return None
+        elif isinstance(node, ArrayNode):
+            return self.execute_array(node)  # Ejecutamos el nuevo ArrayNode
         elif isinstance(node, ReturnNode):
             return self.execute_return(node)
         else:
@@ -83,12 +85,27 @@ class Interpreter:
                 return result  # Salir inmediatamente si se encuentra un return
         return result
 
+    def execute_array(self, node):
+        # Evaluamos cada elemento del vector y los almacenamos en una lista de Python
+        return [self.execute(element) for element in node.elements]
+
     def execute_declaration(self, node):
         for identifier in node.identifier_list:
             value = None
-            if node.expression:
+            if isinstance(node.var_type, tuple):  # Si el tipo es un vector (ejemplo: Maria[10])
+                element_type, size = node.var_type
+                size_value = self.execute(size)  # Evaluamos el tamaño del vector
+
+                if isinstance(node.expression, ArrayNode):  # Si la inicialización es un ArrayNode
+                    value = self.execute(node.expression)  # Evaluamos el ArrayNode
+                    if len(value) != size_value:  # Verificamos que el tamaño coincida
+                        raise Exception(f"Tamaño del vector {identifier.name} no coincide con la inicialización")
+                else:
+                    value = [None] * size_value  # Inicializamos con `None` si no hay valores iniciales
+            elif node.expression:
                 value = self.execute(node.expression)
-            self.context[identifier.name] = value
+
+            self.context[identifier.name] = value  # Guardamos la variable o vector en el contexto
         return None
 
     def execute_binary_op(self, node):
@@ -101,6 +118,13 @@ class Interpreter:
         if isinstance(right_value, str) and right_value.isdigit():
             right_value = int(right_value)
 
+        if node.operator == 'INDEX':  # Acceso a un elemento del vector
+            array = self.context.get(node.left.name)
+            if array is None:
+                raise Exception(f"Variable no definida: {node.left.name}")
+            index = self.execute(node.right)
+            return array[index]  # Devolvemos el valor en el índice especificado
+        
         # Operaciones aritméticas y de concatenación
         if node.operator == 'PLUS':
             if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
@@ -130,11 +154,19 @@ class Interpreter:
         
         # Asignación
         elif node.operator == 'ASSIGN':
-            if isinstance(node.left, IdentifierNode):
-                self.context[node.left.name] = right_value
-                return right_value
-            else:
-                raise Exception("Asignación no válida")
+            if isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':  # Asignación a un elemento del vector
+                array = self.context.get(node.left.left.name)
+                if array is None:
+                    raise Exception(f"Variable no definida: {node.left.left.name}")
+                index = self.execute(node.left.right)
+                value = self.execute(node.right)
+                array[index] = value  # Asignamos el valor en el índice especificado
+                return value
+
+            elif isinstance(node.left, IdentifierNode):
+                value = self.execute(node.right)
+                self.context[node.left.name] = value  # Asignamos el valor a la variable
+                return value
 
         # Operadores de comparación
         elif node.operator == 'EQUAL':

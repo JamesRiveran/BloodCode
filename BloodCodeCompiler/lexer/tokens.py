@@ -36,6 +36,8 @@ tokens = [
     ('LBRACE', r'\{'),
     ('RBRACE', r'\}'),
     ('COMMA', r','),
+    ('LBRACKET', r'\['),  
+    ('RBRACKET', r'\]'),
     ('SEMICOLON', r';'),
     ('PLUS', r'\+'),
     ('MINUS', r'-'),

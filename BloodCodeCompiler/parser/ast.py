@@ -92,3 +92,7 @@ class FunctionDeclarationNode(ASTNode):
 class ReturnNode(ASTNode):
     def __init__(self, expression):
         self.expression = expression  # Expresión que debe retornar la función
+
+class ArrayNode(ASTNode):
+    def __init__(self, elements):
+        self.elements = elements  # Lista de nodos de expresión que representan los elementos del vector

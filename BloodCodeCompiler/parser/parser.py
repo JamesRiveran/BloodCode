@@ -1,4 +1,4 @@
-from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode
+from .ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode, ArrayNode
 
 class Parser:
     def __init__(self, tokens):
@@ -111,35 +111,53 @@ class Parser:
 
     def parse_assignment_or_expression(self):
         identifier = self.parse_identifier()
-        if self.current_token[0] == 'ASSIGN':  # Si es una asignación (=>)
-            self.advance()  # Avanzamos el token de asignación (=>)
+
+        # Verificar si es un acceso a un vector (ejemplo: abc[1])
+        if self.current_token[0] == 'LBRACKET':
+            self.advance()  # Consumimos el '['
+            index = self.parse_expression()  # Parseamos el índice
+            self.expect('RBRACKET')  # Consumimos el ']'
+            if self.current_token[0] == 'ASSIGN':  # Si es una asignación (=>)
+                self.advance()  # Consumimos el '=>'
+                expression = self.parse_expression()
+                self.expect('SEMICOLON')  # Esperamos el punto y coma al final
+                return BinaryOpNode(BinaryOpNode(identifier, 'INDEX', index), 'ASSIGN', expression)
+            else:
+                return BinaryOpNode(identifier, 'INDEX', index)
+
+        elif self.current_token[0] == 'ASSIGN':  # Si es una asignación a una variable normal
+            self.advance()  # Consumimos el '=>'
             expression = self.parse_expression()
             self.expect('SEMICOLON')  # Ahora se espera el punto y coma al final
             return BinaryOpNode(identifier, 'ASSIGN', expression)
-        elif self.current_token[0] == 'LPAREN':  # Si es una llamada a función
-            self.advance()  # Consumir el '('
-            arguments = []
-            if self.current_token[0] != 'RPAREN':  # Si no es ')', parsear los argumentos
-                arguments = self.parse_argument_list()
-            self.expect('RPAREN')  # Consumir el ')'
-            self.expect('SEMICOLON')
-            return FunctionCallNode(identifier, arguments)
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
+
 
 
     def parse_declaration(self):
         self.expect('HUNTER')
         identifier_list = self.parse_identifier_list()
         self.expect('COLON')
+
+        # Verificar si el tipo es un vector (ejemplo: Maria[10])
         var_type = self.current_token[0]
         self.advance()
+
+        if self.current_token[0] == 'LBRACKET':  # Si es un array (ejemplo: Maria[10])
+            self.advance()  # Consumimos el '['
+            size = self.parse_expression()  # Parseamos el tamaño del vector (ej. 10)
+            self.expect('RBRACKET')  # Consumimos el ']'
+            var_type = (var_type, size)  # Guardamos el tipo y el tamaño del vector
+
         expression = None
         if self.current_token[0] == 'ASSIGN':
             self.advance()
-            expression = self.parse_expression()
-        self.expect('SEMICOLON')  # Asegurar que la declaración también termina con un ;
+            expression = self.parse_expression()  # Parseamos la expresión que inicializa el vector
+        self.expect('SEMICOLON')  # Aseguramos que la declaración termina con un punto y coma
         return DeclarationNode(identifier_list, var_type, expression)
+
+
 
     def parse_identifier_list(self):
         identifiers = [self.parse_identifier()]
@@ -194,13 +212,26 @@ class Parser:
         return RestNode()
 
     def parse_expression(self):
+        if self.current_token[0] == 'LBRACKET':  # Si encontramos un corchete, es una lista (vector)
+            self.advance()  # Consumimos el '['
+            elements = []
+            while self.current_token[0] != 'RBRACKET':
+                elements.append(self.parse_expression())  # Parseamos cada elemento de la lista
+                if self.current_token[0] == 'COMMA':
+                    self.advance()  # Consumimos la coma entre los elementos
+            self.expect('RBRACKET')  # Consumimos el ']'
+            return ArrayNode(elements)  # Devolvemos un ArrayNode en lugar de una lista de Python
+
+        # El resto del código de `parse_expression` maneja números, operadores, identificadores, etc.
         left = self.parse_term()
         while self.current_token[0] in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EQUAL', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL', 'NOT', 'BLOODBOND', 'OLDBLOOD']:
             operator = self.current_token[0]
             self.advance()
             right = self.parse_term()
             left = BinaryOpNode(left, operator, right)
-        return left  # Eliminamos el punto y coma aquí, porque no siempre es necesario.
+        return left
+
+
 
     def parse_term(self):
         if self.current_token[0] == 'NUMBER':
@@ -213,15 +244,23 @@ class Parser:
             return StringNode(value)
         elif self.current_token[0] == 'IDENTIFIER':
             identifier = self.parse_identifier()
-            
+
+            # Verificar si es un acceso a un vector (ejemplo: cba[0])
+            if self.current_token[0] == 'LBRACKET':
+                self.advance()  # Consumimos el '['
+                index = self.parse_expression()  # Parseamos el índice
+                self.expect('RBRACKET')  # Consumimos el ']'
+                return BinaryOpNode(identifier, 'INDEX', index)  # Nodo para el acceso al vector
+
             # Verificar si es una llamada a función
-            if self.current_token[0] == 'LPAREN':
+            elif self.current_token[0] == 'LPAREN':
                 self.advance()  # Consumir el '('
                 arguments = []
-                if self.current_token[0] != 'RPAREN':  # Si no es ')', parsear los argumentos
+                if self.current_token[0] != 'RPAREN':
                     arguments = self.parse_argument_list()
-                self.expect('RPAREN')  # Consumir el ')'
-                return FunctionCallNode(identifier, arguments)  # Retornar el nodo de llamada a función
+                self.expect('RPAREN')
+                return FunctionCallNode(identifier, arguments)
+
             else:
                 return identifier
         elif self.current_token[0] == 'LPAREN':
@@ -231,6 +270,7 @@ class Parser:
             return expr
         else:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
+
 
 
         
