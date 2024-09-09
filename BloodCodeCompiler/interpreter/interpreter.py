@@ -15,7 +15,7 @@ class Interpreter:
         elif isinstance(node, BinaryOpNode):
             return self.execute_binary_op(node)
         elif isinstance(node, NumberNode):
-            return int(node.value) if node.value.isdigit() else float(node.value)
+            return int(node.value) if node.value.is_integer() else node.value
         elif isinstance(node, StringNode):
             return node.value
         elif isinstance(node, BooleanNode): 
@@ -140,13 +140,20 @@ class Interpreter:
             else:
                 raise Exception(f"Error de tipos: No se puede sumar {type(left_value)} y {type(right_value)}")
         elif node.operator == 'MINUS':
-            return left_value - right_value
+            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
+                return left_value - right_value
+            else:
+                raise Exception(f"Error de tipos: No se puede restar {type(left_value)} y {type(right_value)}")
         elif node.operator == 'MULTIPLY':
-            return left_value * right_value
+            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
+                return left_value * right_value
+            else:
+                raise Exception(f"Error de tipos: No se puede multiplicar {type(left_value)} y {type(right_value)}")
         elif node.operator == 'DIVIDE':
-            if right_value == 0:
-                raise ValueError("División por cero")
-            return left_value / right_value
+            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
+                return left_value / right_value
+            else:
+                raise Exception(f"Error de tipos: No se puede dividir {type(left_value)} y {type(right_value)}")
 
         # Asignación
         elif node.operator == 'ASSIGN':

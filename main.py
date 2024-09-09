@@ -8,13 +8,9 @@ from BloodCodeCompiler.semantic_analyzer.TypeEnviroment import TypeEnvironment
 
 def main():
     code = '''
-    HuntersDream {
-        GreatOnes print_names(a:Eileen, b:Eileen):Rom {
-            Pray(a);
-        }
-        Hunter x: Eileen => "Hola mundo";
+HuntersDream {
+        Hunter x: Maria => 8 + (15 / (3 + 2) - 4 * 2) * (6 + 8 / (3 - 1)) - 7 * (9 - 5 / (8 - 6));
         Pray(x); 
-        print_names("Maria","Gehrman");
     }
     '''
     env = TypeEnvironment();
