@@ -55,21 +55,19 @@ class Parser:
             return self.parse_expression()
 
     def parse_function_declaration(self):
-        self.expect('GREATONES')  # Reconocemos la palabra clave para la función
-        func_name = self.parse_identifier()  # Obtenemos el nombre de la función
-        self.expect('LPAREN')  # Abrimos paréntesis para los parámetros
+        self.expect('GREATONES')  
+        func_name = self.parse_identifier()  
+        self.expect('LPAREN')  
 
-        # Parseamos los parámetros de la función
         params = []
         if self.current_token[0] != 'RPAREN':
             params = self.parse_parameter_list()
-        self.expect('RPAREN')  # Cerramos paréntesis de los parámetros
+        self.expect('RPAREN')  
 
-        self.expect('COLON')  # Esperamos el tipo de retorno
+        self.expect('COLON')  
         return_type = self.current_token[0]
         self.advance()
 
-        # Parseamos el cuerpo de la función
         block = self.parse_block()
 
         return FunctionDeclarationNode(func_name, params, return_type, block)
@@ -90,17 +88,17 @@ class Parser:
         return (param_name, param_type)
 
     def parse_return_statement(self):
-        self.expect('ECHOES')  # Reconocer la palabra clave 'echoes'
-        expression = self.parse_expression()  # Parsear la expresión que sigue al 'echoes'
-        self.expect('SEMICOLON')  # Esperar el punto y coma al final
-        return ReturnNode(expression)  # Devolver un nodo de retorno
+        self.expect('ECHOES')  
+        expression = self.parse_expression()  
+        self.expect('SEMICOLON')  
+        return ReturnNode(expression) 
 
     def parse_eyes_statement(self):
-        self.expect('EYES')  # Reconocemos el token 'EYES'
+        self.expect('EYES')   
         self.expect('LPAREN')
         identifier = self.parse_identifier() 
         self.expect('RPAREN')
-        self.expect('SEMICOLON')  # Se espera un punto y coma al final
+        self.expect('SEMICOLON') 
         return FunctionCallNode('EYES', [identifier])  
 
     def parse_dream_loop(self):
@@ -114,37 +112,34 @@ class Parser:
     def parse_assignment_or_expression(self):
         identifier = self.parse_identifier()
 
-        # Verificar si es un acceso a un vector (ejemplo: abc[1])
         if self.current_token[0] == 'LBRACKET':
-            self.advance()  # Consumimos el '['
-            index = self.parse_expression()  # Parseamos el índice
-            self.expect('RBRACKET')  # Consumimos el ']'
-            if self.current_token[0] == 'ASSIGN':  # Si es una asignación (=>)
-                self.advance()  # Consumimos el '=>'
-                expression = self.parse_expression()  # Parseamos la expresión
-                self.expect('SEMICOLON')  # Esperamos el punto y coma al final
+            self.advance()  
+            index = self.parse_expression() 
+            self.expect('RBRACKET') 
+            if self.current_token[0] == 'ASSIGN': 
+                self.advance()  
+                expression = self.parse_expression() 
+                self.expect('SEMICOLON') 
                 return BinaryOpNode(BinaryOpNode(identifier, 'INDEX', index), 'ASSIGN', expression)
             else:
                 return BinaryOpNode(identifier, 'INDEX', index)
 
-        # Verificar si es una llamada a función (ejemplo: hello())
         elif self.current_token[0] == 'LPAREN':
-            self.advance()  # Consumimos el '('
+            self.advance()  
             arguments = []
-            if self.current_token[0] != 'RPAREN':  # Parsear los argumentos si existen
+            if self.current_token[0] != 'RPAREN':  
                 arguments = self.parse_argument_list()
-            self.expect('RPAREN')  # Consumimos el ')'
-            self.expect('SEMICOLON')  # Esperamos el punto y coma al final
+            self.expect('RPAREN') 
+            self.expect('SEMICOLON')  
             return FunctionCallNode(identifier, arguments)
 
-        # Verificar si es una asignación (ejemplo: abc => 10 o Eyes(b))
-        elif self.current_token[0] == 'ASSIGN':  # Si es una asignación (=>)
-            self.advance()  # Consumimos el '=>'
-            if self.current_token[0] == 'EYES':  # Si es una función Eyes
-                expression = self.parse_eyes()  # Parseamos la llamada a Eyes
+        elif self.current_token[0] == 'ASSIGN':  
+            self.advance() 
+            if self.current_token[0] == 'EYES':  
+                expression = self.parse_eyes() 
             else:
-                expression = self.parse_expression()  # Parseamos una expresión normal
-            self.expect('SEMICOLON')  # Esperamos el punto y coma al final
+                expression = self.parse_expression() 
+            self.expect('SEMICOLON')  
             return BinaryOpNode(identifier, 'ASSIGN', expression)
 
         else:
@@ -155,21 +150,20 @@ class Parser:
         identifier_list = self.parse_identifier_list()
         self.expect('COLON')
 
-        # Verificar si el tipo es un vector (ejemplo: Maria[10])
         var_type = self.current_token[0]
         self.advance()
 
-        if self.current_token[0] == 'LBRACKET':  # Si es un array (ejemplo: Maria[10])
-            self.advance()  # Consumimos el '['
-            size = self.parse_expression()  # Parseamos el tamaño del vector (ej. 10)
-            self.expect('RBRACKET')  # Consumimos el ']'
-            var_type = (var_type, size)  # Guardamos el tipo y el tamaño del vector
+        if self.current_token[0] == 'LBRACKET': 
+            self.advance()  
+            size = self.parse_expression() 
+            self.expect('RBRACKET')  
+            var_type = (var_type, size)  
 
         expression = None
         if self.current_token[0] == 'ASSIGN':
             self.advance()
-            expression = self.parse_expression()  # Parseamos la expresión que inicializa el vector
-        self.expect('SEMICOLON')  # Aseguramos que la declaración termina con un punto y coma
+            expression = self.parse_expression()  
+        self.expect('SEMICOLON')  
         return DeclarationNode(identifier_list, var_type, expression)
 
 
@@ -227,22 +221,21 @@ class Parser:
         return RestNode()
 
     def parse_expression(self):
-        if self.current_token[0] == 'LBRACKET':  # Si encontramos un corchete, es una lista (vector)
-            self.advance()  # Consumimos el '['
+        if self.current_token[0] == 'LBRACKET': 
+            self.advance()  
             elements = []
             while self.current_token[0] != 'RBRACKET':
-                elements.append(self.parse_expression())  # Parseamos cada elemento de la lista
+                elements.append(self.parse_expression()) 
                 if self.current_token[0] == 'COMMA':
-                    self.advance()  # Consumimos la coma entre los elementos
-            self.expect('RBRACKET')  # Consumimos el ']'
-            return ArrayNode(elements)  # Devolvemos un ArrayNode en lugar de una lista de Python
+                    self.advance() 
+            self.expect('RBRACKET')  
+            return ArrayNode(elements) 
 
-        # Si no es una lista, tratamos la expresión según la jerarquía lógica
-        return self.parse_logical_or()  # Comenzamos con la operación lógica más alta
+        return self.parse_logical_or() 
 
     def parse_logical_or(self):
         node = self.parse_logical_and()
-        while self.current_token[0] == 'OLDBLOOD':  # Operador OR
+        while self.current_token[0] == 'OLDBLOOD':  
             operator = self.current_token[0]
             self.advance()
             right = self.parse_logical_and()
@@ -251,7 +244,7 @@ class Parser:
 
     def parse_logical_and(self):
         node = self.parse_equality()
-        while self.current_token[0] == 'BLOODBOND':  # Operador AND
+        while self.current_token[0] == 'BLOODBOND':  
             operator = self.current_token[0]
             self.advance()
             right = self.parse_equality()
@@ -260,7 +253,7 @@ class Parser:
 
     def parse_equality(self):
         node = self.parse_relational()
-        while self.current_token[0] in ('EQUAL', 'NOT'):  # Operadores de igualdad y desigualdad
+        while self.current_token[0] in ('EQUAL', 'NOT'):  
             operator = self.current_token[0]
             self.advance()
             right = self.parse_relational()
@@ -269,7 +262,7 @@ class Parser:
 
     def parse_relational(self):
         node = self.parse_additive()
-        while self.current_token[0] in ('GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL'):  # Operadores relacionales
+        while self.current_token[0] in ('GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL'): 
             operator = self.current_token[0]
             self.advance()
             right = self.parse_additive()
@@ -278,7 +271,7 @@ class Parser:
 
     def parse_additive(self):
         node = self.parse_multiplicative()
-        while self.current_token[0] in ('PLUS', 'MINUS'):  # Operadores de suma y resta
+        while self.current_token[0] in ('PLUS', 'MINUS'): 
             operator = self.current_token[0]
             self.advance()
             right = self.parse_multiplicative()
@@ -287,7 +280,7 @@ class Parser:
 
     def parse_multiplicative(self):
         node = self.parse_unary()
-        while self.current_token[0] in ('MULTIPLY', 'DIVIDE'):  # Operadores de multiplicación y división
+        while self.current_token[0] in ('MULTIPLY', 'DIVIDE'): 
             operator = self.current_token[0]
             self.advance()
             right = self.parse_unary()
@@ -295,7 +288,7 @@ class Parser:
         return node
 
     def parse_unary(self):
-        if self.current_token[0] == 'VILEBLOOD':  # Operador lógico NOT
+        if self.current_token[0] == 'VILEBLOOD':
             operator = self.current_token[0]
             self.advance()
             operand = self.parse_unary()
@@ -304,7 +297,6 @@ class Parser:
             return self.parse_primary()
 
     def parse_primary(self):
-        # Aquí iría la lógica para manejar números, identificadores, y otros valores primarios
         return self.parse_term()
 
     def parse_primary(self):
@@ -325,16 +317,14 @@ class Parser:
         elif self.current_token[0] == 'IDENTIFIER':
             identifier = self.parse_identifier()
 
-            # Verificar si es un acceso a un vector (ejemplo: cba[0])
             if self.current_token[0] == 'LBRACKET':
-                self.advance()  # Consumimos el '['
-                index = self.parse_expression()  # Parseamos el índice
-                self.expect('RBRACKET')  # Consumimos el ']'
-                return BinaryOpNode(identifier, 'INDEX', index)  # Nodo para el acceso al vector
+                self.advance() 
+                index = self.parse_expression() 
+                self.expect('RBRACKET')  
+                return BinaryOpNode(identifier, 'INDEX', index)  
 
-            # Verificar si es una llamada a función
             elif self.current_token[0] == 'LPAREN':
-                self.advance()  # Consumir el '('
+                self.advance() 
                 arguments = []
                 if self.current_token[0] != 'RPAREN':
                     arguments = self.parse_argument_list()
@@ -355,8 +345,8 @@ class Parser:
 
         
     def parse_argument_list(self):
-        arguments = [self.parse_expression()]  # Parsear el primer argumento
-        while self.current_token[0] == 'COMMA':  # Parsear el resto de los argumentos
+        arguments = [self.parse_expression()] 
+        while self.current_token[0] == 'COMMA':  
             self.advance()
             arguments.append(self.parse_expression())
         return arguments

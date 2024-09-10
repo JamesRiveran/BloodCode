@@ -1,24 +1,24 @@
 class TypeEnvironment:
     def __init__(self):
-        self.scopes = [{}]  # Lista de diccionarios, donde cada diccionario es un scope para variables
-        self.functions = {}  # Diccionario global para almacenar las funciones y sus tipos
+        self.scopes = [{}]  
+        self.functions = {}  
 
     def enter_scope(self):
-        self.scopes.append({})  # Añadir un nuevo diccionario para el scope actual
+        self.scopes.append({}) 
 
     def exit_scope(self):
         if len(self.scopes) > 1:
-            self.scopes.pop()  # Eliminar el scope actual
+            self.scopes.pop() 
         else:
             raise Exception("No se puede salir del scope global")
 
     def declare_variable(self, name, var_type):
-        if name in self.scopes[-1]:  # Verificar en el scope actual
+        if name in self.scopes[-1]:
             raise Exception(f"Variable '{name}' ya ha sido declarada en el scope actual")
-        self.scopes[-1][name] = var_type  # Declarar en el scope actual
+        self.scopes[-1][name] = var_type 
 
     def get_variable_type(self, name):
-        for scope in reversed(self.scopes):  # Buscar desde el scope más interno hasta el global
+        for scope in reversed(self.scopes): 
             if name in scope:
                 return scope[name]
         raise Exception(f"Variable '{name}' no ha sido declarada")

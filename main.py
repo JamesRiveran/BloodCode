@@ -13,7 +13,7 @@ HuntersDream {
         Pray(x); 
     }
     '''
-    env = TypeEnvironment();
+    env = TypeEnvironment()
     lexer = Lexer(code)
     tokens = lexer.tokenize()
     parser = Parser(tokens)
@@ -29,7 +29,7 @@ HuntersDream {
         interpreter.execute(ast)
         print("Contexto:", interpreter.context)
     except SemanticError as e:
-        print(e)  # Imprime solo el mensaje del error semántico sin la traza
+        print(e) 
     except Exception as e:
         print(f"Error inesperado: {e}")
 
