@@ -14,13 +14,20 @@ def compile_code():
     try:
         data = request.get_json()
         code = data.get('code', '')
+        action = data.get('action', 'compile') 
 
         env = TypeEnvironment()
         lexer = Lexer(code)
         tokens = lexer.tokenize()
+
+        if action == 'tokens':
+            return jsonify({'tokens': tokens}), 200  
+
         parser = Parser(tokens)
         ast = parser.parse()
 
+        if action == 'ast':
+            return jsonify({'ast': repr(ast)}), 200  
         analyzer = SemanticAnalyzer(env)
         analyzer.analyze(ast)
 

@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+
+import React, { useState, useEffect } from "react";
 import { CodeEditor } from "./CodeEditor";
 import { OutputDisplay } from "./OutputDisplay";
 import { ActionButtons } from "./ActionButtons";
@@ -7,11 +8,11 @@ import { CodeOptionsComponent } from "./CodeOptions";
 import { CodeOptions, codeTemplates } from "./CodeGenerator";
 
 export default function BloodCodeCompiler() {
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState("");  
   const [output, setOutput] = useState("");
-  const [isError, setIsError] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<CodeOptions | "">("");
-  const [lineNumbers, setLineNumbers] = useState(["1"]);
+  const [isError, setIsError] = useState(false); 
+  const [selectedOption, setSelectedOption] = useState<CodeOptions | "">("");  
+  const [lineNumbers, setLineNumbers] = useState(["1"]);  
 
   useEffect(() => {
     const lines = code.split("\n").length;
@@ -29,8 +30,8 @@ export default function BloodCodeCompiler() {
     setCode((prevCode) => prevCode + (prevCode ? "\n" : "") + generatedCode);
   };
 
-  const compile = async () => {
-    setOutput("Compilando...");
+  const compile = async (action: string) => {
+    setOutput("Procesando...");
     setIsError(false);
 
     try {
@@ -39,16 +40,22 @@ export default function BloodCodeCompiler() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code, action }),  
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setOutput("Compilación exitosa. Ahora puedes ejecutar el código.");
+        if (action === 'tokens') {
+          setOutput(`Tokens: ${JSON.stringify(data.tokens, null, 2)}`);
+        } else if (action === 'ast') {
+          setOutput(`AST: ${data.ast}`);
+        } else {
+          setOutput("Compilación exitosa. Ahora puedes ejecutar el código.");
+        }
         setIsError(false);
       } else {
-        setOutput(`Error de compilación: ${data.error || "Error desconocido"}`);
+        setOutput(`Error: ${data.error || "Error desconocido"}`);
         setIsError(true);
       }
     } catch (err: any) {
@@ -100,6 +107,7 @@ export default function BloodCodeCompiler() {
           <ActionButtons compile={compile} execute={execute} />
         </div>
       </header>
+
       <main className="flex-grow flex flex-col p-4 space-y-4 w-full">
         <div className="flex-grow h-[500px] max-h-[500px] bg-gray-800 rounded-lg shadow-md overflow-hidden w-full flex">
           <div className="flex-grow">
