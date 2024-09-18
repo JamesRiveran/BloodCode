@@ -5,15 +5,20 @@ interface OutputDisplayProps {
   
   export const OutputDisplay: React.FC<OutputDisplayProps> = ({ output, isError }) => {
     return (
-      <div className="h-[350px] max-h-[320px] bg-gray-800 rounded-lg shadow-md p-4 overflow-hidden">
-        <h2 className="text-lg font-semibold mb-2">Salida</h2>
-        <pre
-          className={`whitespace-pre-wrap h-[calc(100%-2rem)] overflow-y-auto bg-gray-700 p-2 rounded ${
-            isError ? "text-red-500" : "text-gray-100"
-          }`}
-        >
-          {output || "La salida del programa se mostrará aquí"}
+      <div className="flex flex-col bg-color-gray-800 rounded-lg shadow-md p-6 w-full h-auto max-h-[70vh] space-y-4">
+        <div className="flex-grow bg-color-gray-700 rounded-lg shadow-md p-4 overflow-hidden h-[29vh] flex flex-col ">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-400">Salida</h2>
+          </div>
+          <pre
+            className={`flex-grow w-full overflow-y-auto bg-color-gray-800 p-5 rounded border border-gray-600 ${
+                isError ? "text-danger" : "text-color-gray-600"
+            }`}
+            >
+            {output || "La salida del programa se mostrará aquí"}
         </pre>
+
+        </div>
       </div>
     );
   };

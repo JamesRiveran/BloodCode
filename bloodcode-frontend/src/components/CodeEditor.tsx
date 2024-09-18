@@ -1,4 +1,3 @@
-"use client";
 import React, { useRef } from "react";
 
 interface CodeEditorProps {
@@ -17,21 +16,29 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ code, setCode, lineNumbe
     }
   };
 
+  const handleCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCode(e.target.value); 
+  };
+
   return (
-    <div className="flex-grow bg-gray-800 rounded-lg shadow-md flex overflow-hidden">
-      <div className="p-4 text-right bg-gray-700 text-gray-500 select-none overflow-hidden h-[500px] max-h-[500px]">
-        {lineNumbers.map((num) => (
-          <div key={num} className="leading-6 h-6">{num}</div>
-        ))}
+    <main className="flex-grow flex flex-col p-4 space-y-4 w-full h-full">
+      <div className="flex-grow bg-color-gray-800 rounded-lg shadow-md flex overflow-hidden w-full h-full">
+        
+        <div className="p-4 text-right bg-color-gray-700 text-gray-400 select-none overflow-hidden flex-shrink-0 border border-gray-600">
+          {lineNumbers.map((num) => (
+            <div key={num} className="leading-6">{num}</div>
+          ))}
+        </div>
+        
+        <textarea
+          ref={editorRef}
+          value={code}  
+          onChange={handleCodeChange} 
+          onScroll={handleEditorScroll}  
+          placeholder="Escribe tu código aquí"
+          className="flex-grow p-4 bg-color-gray-800 text-gray-100 resize-none border border-gray-600 focus:outline-none font-mono overflow-y-auto w-full h-full"
+        />
       </div>
-      <textarea
-        ref={editorRef}
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        onScroll={handleEditorScroll}
-        placeholder="Escribe tu código aquí"
-        className="flex-grow h-[500px] max-h-[500px] p-4 bg-gray-800 text-gray-100 border-none resize-none focus:outline-none font-mono overflow-y-auto h-full"
-      />
-    </div>
+    </main>
   );
 };

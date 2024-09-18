@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { CodeEditor } from "./CodeEditor";
 import { OutputDisplay } from "./OutputDisplay";
 import { ActionButtons } from "./ActionButtons";
@@ -21,13 +20,13 @@ export default function BloodCodeCompiler() {
 
   useEffect(() => {
     if (selectedOption) {
-      generateCode(selectedOption);
+      generateCode(selectedOption);  
     }
   }, [selectedOption]);
 
   const generateCode = (option: CodeOptions) => {
     const generatedCode = codeTemplates[option];
-    setCode((prevCode) => prevCode + (prevCode ? "\n" : "") + generatedCode);
+    setCode((prevCode) => prevCode + (prevCode ? "\n" : "") + generatedCode);  
   };
 
   const compile = async (action: string) => {
@@ -96,9 +95,9 @@ export default function BloodCodeCompiler() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-gray-100">
-      <header className="bg-gray-800 p-4 flex flex-col sm:flex-row justify-between items-center w-full">
-        <h1 className="text-xl font-bold text-red-500">Compilador BloodCode</h1>
+    <div className="flex flex-col min-h-screen bg-color-gray-900 text-gray-100">
+      <header className="bg-color-gray-800 p-4 flex flex-col sm:flex-row justify-between items-center w-full">
+        <h1 className="text-xl font-bold text-white">Compilador BloodCode</h1>
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <CodeOptionsComponent
             selectedOption={selectedOption}
@@ -109,7 +108,7 @@ export default function BloodCodeCompiler() {
       </header>
 
       <main className="flex-grow flex flex-col p-4 space-y-4 w-full">
-        <div className="flex-grow h-[500px] max-h-[500px] bg-gray-800 rounded-lg shadow-md overflow-hidden w-full flex">
+        <div className="flex-grow h-[500px] max-h-[500px] bg-color-gray-800 rounded-lg shadow-md overflow-hidden w-full flex">
           <div className="flex-grow">
             <CodeEditor code={code} setCode={setCode} lineNumbers={lineNumbers} />
           </div>
