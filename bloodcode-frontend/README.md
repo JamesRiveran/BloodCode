@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lenguaje de Programación Personalizado (Guía de funcionamiento)
 
-## Getting Started
+Este proyecto está compuesto por un backend desarrollado en **Python** con **FastAPI** y un frontend en **Next.js**. A continuación, se describen los comandos necesarios para ejecutar ambos entornos.
 
-First, run the development server:
+## Comandos para Ejecutar el Proyecto
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 1) Backend (FastAPI)
+Instalar dependencias:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    pip install Flask==2.3.2 Flask-CORS==3.0.10
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Ejecutar el backend:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    python app.py
 
-## Learn More
+Esto ejecutará el servidor FastAPI en http://localhost:5000.
 
-To learn more about Next.js, take a look at the following resources:
+### 2) Frontend (Next.js)
+Instalar dependencias:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    npm install
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Ejecutar el frontend:
 
-## Deploy on Vercel
+    npm run dev
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Esto abrirá la aplicación en http://localhost:3000.
