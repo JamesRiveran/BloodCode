@@ -25,7 +25,10 @@ class SemanticAnalyzer:
         elif isinstance(node, BinaryOpNode):
             return self.analyze_binary_op(node)
         elif isinstance(node, NumberNode):
-            return 'MARIA' 
+            if float(node.value).is_integer():
+                return 'MARIA'
+            else:
+                return 'GEHRMAN'
         elif isinstance(node, StringNode):
             return 'EILEEN' 
         elif isinstance(node, IdentifierNode):
@@ -52,7 +55,7 @@ class SemanticAnalyzer:
             self.analyze(statement)
 
     def analyze_declaration(self, node):
-        var_type = node.var_type.upper() 
+        var_type = node.var_type.upper()
         for identifier in node.identifier_list:
             self.env.declare_variable(identifier.name, var_type)
         if node.expression:
@@ -126,12 +129,13 @@ class SemanticAnalyzer:
                 raise SemanticError(f"La función '{node.identifier}' espera 1 argumento, pero se encontraron {len(node.arguments)}", node)
             
             arg_type = self.analyze(node.arguments[0]).upper()  
-            if node.identifier == 'PRAY' and arg_type not in ['MARIA', 'EILEEN']:
-                raise SemanticError(f"La función 'PRAY' solo puede imprimir valores de tipo 'MARIA' o 'EILEEN', pero se encontró '{arg_type}'", node)
+            # Modificar para permitir también 'GEHRMAN'
+            if node.identifier == 'PRAY' and arg_type not in ['MARIA', 'EILEEN', 'GEHRMAN']:
+                raise SemanticError(f"La función 'PRAY' solo puede imprimir valores de tipo 'MARIA', 'EILEEN' o 'GEHRMAN', pero se encontró '{arg_type}'", node)
             elif node.identifier == 'EYES' and arg_type not in ['MARIA', 'EILEEN']:
                 raise SemanticError(f"La función 'EYES' solo puede leer valores de tipo 'MARIA' o 'EILEEN', pero se encontró '{arg_type}'", node)
-            return None  
-
+            return None
+            
         func_type = self.env.get_function_type(node.identifier.name)
         param_types, return_type = func_type
 

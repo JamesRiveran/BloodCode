@@ -14,8 +14,11 @@ class Interpreter:
             return self.execute_declaration(node)
         elif isinstance(node, BinaryOpNode):
             return self.execute_binary_op(node)
-        elif isinstance(node, NumberNode):
-            return int(node.value) if node.value.is_integer() else node.value
+        if isinstance(node, NumberNode):
+            if float(node.value).is_integer():
+                return int(node.value)  
+            else:
+                return float(node.value)
         elif isinstance(node, StringNode):
             return node.value
         elif isinstance(node, BooleanNode):
