@@ -46,38 +46,41 @@ class Interpreter:
             full_message = ""  
             for expr in node.arguments:
                 result = self.execute(expr)
-                full_message += str(result) 
-            self.output.append(full_message) 
+                full_message += str(result)
+            self.output.append(full_message)
             return None
 
         elif node.identifier == 'EYES':
             for var in node.arguments:
                 var_type = self.env.get_variable_type(var.name)
                 value = input(f"Ingrese valor para {var.name}: ")
-
-                if var_type == 'MARIA':
+                
+                if var_type == 'MARIA':  
                     try:
                         value = int(value)
                     except ValueError:
                         raise Exception(f"Error: Se esperaba un valor numérico para '{var.name}'")
-                elif var_type == 'EILEEN':
+                elif var_type == 'EILEEN':  
                     value = str(value)
                 else:
                     raise Exception(f"Tipo no soportado para 'Eyes': {var_type}")
-
-                self.context[var.name] = value
+                
+                self.context[var.name] = value  
             return None
 
-        func = self.functions.get(node.identifier.name)
-        if func is None:
-            raise Exception(f"Función no encontrada: {node.identifier.name}")
+        if node.identifier.name in self.functions:
+            func = self.functions[node.identifier.name]  
 
-        local_context = self.context.copy()
+            local_context = self.context.copy()
 
-        for param, arg in zip(func.parameters, node.arguments):
-            local_context[param[0].name] = self.execute(arg)
+            for param, arg in zip(func.parameters, node.arguments):
+                local_context[param[0].name] = self.execute(arg)
 
-        return self.execute_block_with_context(func.block, local_context)
+            result = self.execute_block_with_context(func.block, local_context)
+            return result
+
+        raise Exception(f"Función no encontrada: {node.identifier.name}")
+
 
     def execute_block_with_context(self, block, context):
         previous_context = self.context
@@ -126,6 +129,10 @@ class Interpreter:
                 value = self.execute(node.expression)
 
             self.context[identifier.name] = value
+        return None
+    
+    def execute_function_declaration(self, node):
+        self.functions[node.name.name] = node 
         return None
 
     def execute_binary_op(self, node):

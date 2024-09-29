@@ -57,20 +57,22 @@ class Parser:
     def parse_function_declaration(self):
         self.expect('GREATONES')  
         func_name = self.parse_identifier()  
-        self.expect('LPAREN')  
+
+        self.expect('LPAREN') 
 
         params = []
-        if self.current_token[0] != 'RPAREN':
-            params = self.parse_parameter_list()
+        if self.current_token[0] != 'RPAREN': 
+            params = self.parse_parameter_list()  
         self.expect('RPAREN')  
 
-        self.expect('COLON')  
-        return_type = self.current_token[0]
-        self.advance()
+        self.expect('COLON') 
+        return_type = self.current_token[1] 
+        self.advance()  
 
-        block = self.parse_block()
+        block = self.parse_block() 
 
         return FunctionDeclarationNode(func_name, params, return_type, block)
+
 
     def parse_parameter_list(self):
         params = []
@@ -81,10 +83,10 @@ class Parser:
         return params
 
     def parse_parameter(self):
-        param_name = self.parse_identifier()
-        self.expect('COLON')
-        param_type = self.current_token[0]
-        self.advance()
+        param_name = self.parse_identifier() 
+        self.expect('COLON') 
+        param_type = self.current_token[1] 
+        self.advance() 
         return (param_name, param_type)
 
     def parse_return_statement(self):
@@ -146,9 +148,9 @@ class Parser:
             raise SyntaxError(f"Token inesperado {self.current_token[0]}")
 
     def parse_declaration(self):
-        self.expect('HUNTER')
-        identifier_list = self.parse_identifier_list()
-        self.expect('COLON')
+        self.expect('HUNTER')  
+        identifier_list = self.parse_identifier_list() 
+        self.expect('COLON')  
 
         var_type = self.current_token[0]
         self.advance()
@@ -163,17 +165,24 @@ class Parser:
         if self.current_token[0] == 'ASSIGN':
             self.advance()
             expression = self.parse_expression()  
-        self.expect('SEMICOLON')  
+        self.expect('SEMICOLON') 
         return DeclarationNode(identifier_list, var_type, expression)
 
 
-
     def parse_identifier_list(self):
-        identifiers = [self.parse_identifier()]
-        while self.current_token[0] == 'COMMA':
-            self.advance()
-            identifiers.append(self.parse_identifier())
+        identifiers = [self.parse_identifier()] 
+        while self.current_token[0] == 'COMMA':  
+            self.advance()  
+            identifiers.append(self.parse_identifier())  
         return identifiers
+
+    def parse_identifier(self):
+        if self.current_token[0] == 'IDENTIFIER':
+            name = self.current_token[1]
+            self.advance()
+            return IdentifierNode(name)
+        else:
+            raise SyntaxError(f"Se esperaba un IDENTIFIER, pero se encontró {self.current_token[0]}")
 
     def parse_if_statement(self):
         self.expect('INSIGHT')

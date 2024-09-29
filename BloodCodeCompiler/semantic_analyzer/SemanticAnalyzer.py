@@ -1,4 +1,4 @@
-from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, FunctionDeclarationNode, ReturnNode, ArrayNode
+from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode, UnaryOpNode, FunctionDeclarationNode, ReturnNode, ArrayNode
 
 class SemanticError(Exception): 
     def __init__(self, message, node=None):
@@ -42,6 +42,8 @@ class SemanticAnalyzer:
             self.analyze_function_declaration(node)
         elif isinstance(node, ReturnNode):
             return self.analyze_return(node)
+        elif isinstance(node, BooleanNode):  
+            return 'BLOOD'
         else:
             raise SemanticError(f"Nodo no soportado: {type(node)}", node)
 
@@ -50,11 +52,11 @@ class SemanticAnalyzer:
             self.analyze(statement)
 
     def analyze_declaration(self, node):
-        var_type = node.var_type
+        var_type = node.var_type.upper() 
         for identifier in node.identifier_list:
             self.env.declare_variable(identifier.name, var_type)
         if node.expression:
-            expr_type = self.analyze(node.expression)
+            expr_type = self.analyze(node.expression).upper()
             if isinstance(var_type, tuple):  
                 if expr_type != 'ARRAY':
                     raise SemanticError(f"Se esperaba un array para la variable '{identifier.name}', pero se encontró {expr_type}", node)
@@ -63,8 +65,8 @@ class SemanticAnalyzer:
                     raise SemanticError(f"Error de tipo: Se esperaba '{var_type}' para la variable '{identifier.name}', pero se encontró '{expr_type}'", node)
 
     def analyze_binary_op(self, node):
-        left_type = self.analyze(node.left)
-        right_type = self.analyze(node.right)
+        left_type = self.analyze(node.left).upper()
+        right_type = self.analyze(node.right).upper()
         
         if node.operator in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
             if left_type != 'MARIA' or right_type != 'MARIA':
@@ -123,12 +125,11 @@ class SemanticAnalyzer:
             if len(node.arguments) != 1:
                 raise SemanticError(f"La función '{node.identifier}' espera 1 argumento, pero se encontraron {len(node.arguments)}", node)
             
-            arg_type = self.analyze(node.arguments[0])
-            if node.identifier == 'PRAY' and arg_type not in ['MARIA', 'EILEEN']: 
+            arg_type = self.analyze(node.arguments[0]).upper()  
+            if node.identifier == 'PRAY' and arg_type not in ['MARIA', 'EILEEN']:
                 raise SemanticError(f"La función 'PRAY' solo puede imprimir valores de tipo 'MARIA' o 'EILEEN', pero se encontró '{arg_type}'", node)
-            elif node.identifier == 'EYES' and arg_type not in ['MARIA', 'EILEEN']: 
+            elif node.identifier == 'EYES' and arg_type not in ['MARIA', 'EILEEN']:
                 raise SemanticError(f"La función 'EYES' solo puede leer valores de tipo 'MARIA' o 'EILEEN', pero se encontró '{arg_type}'", node)
-
             return None  
 
         func_type = self.env.get_function_type(node.identifier.name)
@@ -138,11 +139,12 @@ class SemanticAnalyzer:
             raise SemanticError(f"Error de tipo: La función '{node.identifier.name}' espera {len(param_types)} argumentos, pero se encontraron {len(node.arguments)}", node)
 
         for i, arg in enumerate(node.arguments):
-            arg_type = self.analyze(arg)
-            if arg_type != param_types[i]:
-                raise SemanticError(f"Error de tipo: Argumento {i+1} de la función '{node.identifier.name}' esperaba {param_types[i]}, pero se encontró {arg_type}", node)
+            arg_type = self.analyze(arg).upper()  
+            expected_type = param_types[i].upper()  
+            if arg_type != expected_type:
+                raise SemanticError(f"Error de tipo: Argumento {i+1} de la función '{node.identifier.name}' esperaba {expected_type}, pero se encontró {arg_type}", node)
 
-        return return_type
+        return return_type.upper()  
 
     def analyze_if_statement(self, node):
         condition_type = self.analyze(node.condition)

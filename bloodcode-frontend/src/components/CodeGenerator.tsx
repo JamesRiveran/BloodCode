@@ -30,13 +30,12 @@ export const codeTemplates: Record<CodeOptions, string> = {
   }
 }`,
   functionSyntax: `HuntersDream {
-  GreatOnes multiplicar(Hunter a: Maria, Hunter b: Maria): Maria {
-    Echoes(a * b);
-  }
-
-  Hunter resultado: Maria => multiplicar(5, 3);
-  Pray("El resultado de la multiplicación es:");
-  Pray(resultado);
+    GreatOnes suma(a: Maria, b: Maria): Maria {
+        Echoes (a + b);
+    }
+    Hunter resultado: Maria;
+    resultado => suma(10, 10);
+    Pray(resultado);
 }`,
   operationSyntax: `HuntersDream {
   Hunter a: Maria => 10;
