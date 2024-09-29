@@ -9,47 +9,51 @@ interface CodeGeneratorProps {
 
 export const codeTemplates: Record<CodeOptions, string> = {
   reservedWords: `HuntersDream {
-  Hunter a: Maria;
-  Hunter isTrue: Blood => true;
-  
-  Insight (isTrue) {
+  Hunter numero: Maria => 10;
+  Hunter texto: Eileen => "Hola mundo";
+  Hunter esVerdadero: Blood => true;
+
+  Insight (esVerdadero) {
     Pray("La condición es verdadera.");
   } Madness {
     Pray("La condición es falsa.");
   }
 }`,
   controlSyntax: `HuntersDream {
-  Hunter a: Maria => 10;
-  Hunter b: Maria => 5;
+  Hunter x: Maria => 20;
+  Hunter y: Maria => 10;
 
-  Insight (a > b) {
-    Pray("a es mayor que b");
+  Insight (x > y) {
+    Pray("x es mayor que y.");
   } Madness {
-    Pray("a no es mayor que b");
+    Pray("x no es mayor que y.");
   }
 }`,
   functionSyntax: `HuntersDream {
-  GreatOnes suma(Hunter x: Maria, Hunter y: Maria): Maria {
-    Echoes(x + y);
+  GreatOnes multiplicar(Hunter a: Maria, Hunter b: Maria): Maria {
+    Echoes(a * b);
   }
 
-  Hunter resultado: Maria => suma(10, 5);
-  Pray("Resultado de la suma: ");
+  Hunter resultado: Maria => multiplicar(5, 3);
+  Pray("El resultado de la multiplicación es:");
   Pray(resultado);
 }`,
   operationSyntax: `HuntersDream {
   Hunter a: Maria => 10;
   Hunter b: Maria => 5;
+  Hunter c: Maria => 2;
   Hunter resultado: Maria;
 
-  resultado => a + b * 2;
-  Pray("Resultado: ");
+  resultado => a + (b * c);
+  Pray("El resultado es:");
   Pray(resultado);
 }`,
   semantics: `HuntersDream {
   Hunter x: Maria => 5;
-  Pray("x + 3: ");
-  Pray(x + 3); 
+  Hunter resultado: Maria => x + 3;
+
+  Pray("El resultado de x + 3 es:");
+  Pray(resultado); 
 }`,
   dataTypes: `HuntersDream {
   Hunter entero: Maria => 42;
@@ -67,7 +71,9 @@ export const codeTemplates: Record<CodeOptions, string> = {
   Pray(cadena);
   
   Pray("Booleano: ");
-  Pray(booleano);
+  Insight (booleano) {
+    Pray("El valor booleano es verdadero.");
+  }
 }`,
 };
 

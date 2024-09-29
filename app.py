@@ -56,7 +56,10 @@ def execute_code():
         interpreter = Interpreter(env)
         interpreter.execute(ast)
 
-        return jsonify({'result': interpreter.context}), 200
+        if not interpreter.output:
+            interpreter.output = ["No se encontraron salidas de Pray."]
+
+        return jsonify({'result': interpreter.output}), 200  
 
     except SemanticError as e:
         return jsonify({'error': str(e)}), 400

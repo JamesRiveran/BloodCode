@@ -1,11 +1,11 @@
-from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode,BooleanNode, UnaryOpNode, FunctionDeclarationNode, ReturnNode, ArrayNode
-
+from ..parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode, UnaryOpNode, FunctionDeclarationNode, ReturnNode, ArrayNode
 
 class Interpreter:
     def __init__(self, env):
         self.env = env
-        self.context = {}  
-        self.functions = {}  
+        self.context = {}
+        self.functions = {}
+        self.output = [] 
 
     def execute(self, node):
         if isinstance(node, BlockNode):
@@ -18,7 +18,7 @@ class Interpreter:
             return int(node.value) if node.value.is_integer() else node.value
         elif isinstance(node, StringNode):
             return node.value
-        elif isinstance(node, BooleanNode): 
+        elif isinstance(node, BooleanNode):
             return node.value
         elif isinstance(node, IdentifierNode):
             return self.context.get(node.name, None)
@@ -35,16 +35,39 @@ class Interpreter:
         elif isinstance(node, RestNode):
             return None
         elif isinstance(node, ArrayNode):
-            return self.execute_array(node)   
+            return self.execute_array(node)
         elif isinstance(node, ReturnNode):
             return self.execute_return(node)
         else:
             raise Exception(f"Nodo no soportado: {type(node)}")
 
-    def execute_function_declaration(self, node):
-        self.functions[node.name.name] = node
-
     def execute_function_call(self, node):
+        if node.identifier == 'PRAY':
+            full_message = ""  
+            for expr in node.arguments:
+                result = self.execute(expr)
+                full_message += str(result) 
+            self.output.append(full_message) 
+            return None
+
+        elif node.identifier == 'EYES':
+            for var in node.arguments:
+                var_type = self.env.get_variable_type(var.name)
+                value = input(f"Ingrese valor para {var.name}: ")
+
+                if var_type == 'MARIA':
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        raise Exception(f"Error: Se esperaba un valor numérico para '{var.name}'")
+                elif var_type == 'EILEEN':
+                    value = str(value)
+                else:
+                    raise Exception(f"Tipo no soportado para 'Eyes': {var_type}")
+
+                self.context[var.name] = value
+            return None
+
         func = self.functions.get(node.identifier.name)
         if func is None:
             raise Exception(f"Función no encontrada: {node.identifier.name}")
@@ -54,19 +77,16 @@ class Interpreter:
         for param, arg in zip(func.parameters, node.arguments):
             local_context[param[0].name] = self.execute(arg)
 
-        result = self.execute_block_with_context(func.block, local_context)
-
-        return result
+        return self.execute_block_with_context(func.block, local_context)
 
     def execute_block_with_context(self, block, context):
         previous_context = self.context
         self.context = context
 
-        result = None
         for statement in block.statements:
             result = self.execute(statement)
             if isinstance(statement, ReturnNode):
-                break  
+                break
 
         self.context = previous_context
         return result
@@ -75,12 +95,16 @@ class Interpreter:
         return self.execute(node.expression)
 
     def execute_block(self, node):
-        result = None
         for statement in node.statements:
-            result = self.execute(statement)
+            self.execute(statement)  
+
+            if isinstance(statement, FunctionCallNode) and statement.identifier == 'PRAY':
+                continue 
+
             if isinstance(statement, ReturnNode):
-                return result   
-        return result
+                return self.execute(statement.expression)  
+
+        return None
 
     def execute_array(self, node):
         return [self.execute(element) for element in node.elements]
@@ -88,20 +112,20 @@ class Interpreter:
     def execute_declaration(self, node):
         for identifier in node.identifier_list:
             value = None
-            if isinstance(node.var_type, tuple): 
+            if isinstance(node.var_type, tuple):
                 element_type, size = node.var_type
-                size_value = self.execute(size)  
+                size_value = self.execute(size)
 
-                if isinstance(node.expression, ArrayNode): 
-                    value = self.execute(node.expression)  
-                    if len(value) != size_value: 
+                if isinstance(node.expression, ArrayNode):
+                    value = self.execute(node.expression)
+                    if len(value) != size_value:
                         raise Exception(f"Tamaño del vector {identifier.name} no coincide con la inicialización")
                 else:
-                    value = [None] * size_value  
+                    value = [None] * size_value
             elif node.expression:
                 value = self.execute(node.expression)
 
-            self.context[identifier.name] = value 
+            self.context[identifier.name] = value
         return None
 
     def execute_binary_op(self, node):
@@ -118,44 +142,30 @@ class Interpreter:
             if array is None:
                 raise Exception(f"Variable no definida: {node.left.name}")
             index = self.execute(node.right)
-            return array[index] 
-        
+            return array[index]
+
         if node.operator == 'PLUS':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value + right_value
-            elif isinstance(left_value, str) and isinstance(right_value, str):
-                return left_value + right_value  
-            else:
-                raise Exception(f"Error de tipos: No se puede sumar {type(left_value)} y {type(right_value)}")
+            return left_value + right_value
         elif node.operator == 'MINUS':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value - right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede restar {type(left_value)} y {type(right_value)}")
+            return left_value - right_value
         elif node.operator == 'MULTIPLY':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value * right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede multiplicar {type(left_value)} y {type(right_value)}")
+            return left_value * right_value
         elif node.operator == 'DIVIDE':
-            if isinstance(left_value, (int, float)) and isinstance(right_value, (int, float)):
-                return left_value / right_value
-            else:
-                raise Exception(f"Error de tipos: No se puede dividir {type(left_value)} y {type(right_value)}")
+            return left_value / right_value
 
         elif node.operator == 'ASSIGN':
-            if isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':  
+            if isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':
                 array = self.context.get(node.left.left.name)
                 if array is None:
                     raise Exception(f"Variable no definida: {node.left.left.name}")
                 index = self.execute(node.left.right)
                 value = self.execute(node.right)
-                array[index] = value 
+                array[index] = value
                 return value
 
             elif isinstance(node.left, IdentifierNode):
                 value = self.execute(node.right)
-                self.context[node.left.name] = value 
+                self.context[node.left.name] = value
                 return value
 
         elif node.operator == 'EQUAL':
@@ -171,11 +181,11 @@ class Interpreter:
         elif node.operator == 'LESSEQUAL':
             return left_value <= right_value
 
-        elif node.operator == 'BLOODBOND':  
+        elif node.operator == 'BLOODBOND':
             return left_value and right_value
-        elif node.operator == 'OLDBLOOD':  
+        elif node.operator == 'OLDBLOOD':
             return left_value or right_value
-        elif node.operator == 'VILEBLOOD': 
+        elif node.operator == 'VILEBLOOD':
             return not self.execute(node.right)
 
         else:
@@ -183,64 +193,24 @@ class Interpreter:
 
     def execute_unary_op(self, node):
         operand_value = self.execute(node.operand)
-        if node.operator == 'VILEBLOOD':  
+        if node.operator == 'VILEBLOOD':
             return not operand_value
         else:
             raise Exception(f"Operador unario no soportado: {node.operator}")
-            
+
     def execute_if_statement(self, node):
         condition_value = self.execute(node.condition)
         if condition_value:
-            return self.execute(node.true_block)
+            self.execute(node.true_block)
         elif node.false_block:
-            return self.execute(node.false_block)
-        return None
+            self.execute(node.false_block)
 
     def execute_loop(self, node):
         if node.init:
-            self.execute(node.init)  
-        
-        while self.execute(node.condition):  
-            self.execute(node.block)  
+            self.execute(node.init)
+
+        while self.execute(node.condition):
+            self.execute(node.block)
             if node.increment:
-                self.execute(node.increment)  
-        
+                self.execute(node.increment)
         return None
-
-    def execute_function_call(self, node):
-        if node.identifier == 'PRAY':
-            for expr in node.arguments:
-                result = self.execute(expr)
-                print(result) 
-            return None  
-        
-        elif node.identifier == 'EYES':
-            for var in node.arguments:
-                var_type = self.env.get_variable_type(var.name)
-                value = input(f"Ingrese valor para {var.name}: ")
-                
-                if var_type == 'MARIA':  
-                    try:
-                        value = int(value) 
-                    except ValueError:
-                        raise Exception(f"Error: Se esperaba un valor numérico para '{var.name}'")
-                elif var_type == 'EILEEN':  
-                    value = str(value)
-                else:
-                    raise Exception(f"Tipo no soportado para 'Eyes': {var_type}")
-                
-                self.context[var.name] = value  
-            return None
-            
-        func = self.functions.get(node.identifier.name)
-        if func is None:
-            raise Exception(f"Función no encontrada: {node.identifier.name}")
-
-        local_context = self.context.copy()
-
-        for param, arg in zip(func.parameters, node.arguments):
-            local_context[param[0].name] = self.execute(arg)
-
-        result = self.execute_block_with_context(func.block, local_context)
-
-        return result
