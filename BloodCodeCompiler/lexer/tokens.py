@@ -57,6 +57,6 @@ tokens = [
     ('NUMBER', r'\d+(\.\d+)?'),
     ('STRING', r'"[^"]*"'),
 
-    # Identificadores (deben ir al final)
+    # Identificadores 
     ('IDENTIFIER', r'[a-zA-Z_]\w*'),
 ]

@@ -43,6 +43,7 @@ def execute_code():
     try:
         data = request.get_json()
         code = data.get('code', '')
+        user_input = data.get('userInput', None) 
 
         env = TypeEnvironment()
         lexer = Lexer(code)
@@ -54,12 +55,16 @@ def execute_code():
         analyzer.analyze(ast)
 
         interpreter = Interpreter(env)
+        
+        if user_input:  
+            interpreter.context["input_var"] = user_input
+        
         interpreter.execute(ast)
 
-        if not interpreter.output:
-            interpreter.output = ["No se encontraron salidas de Pray."]
+        if "prompt_var" in interpreter.context:  
+            return jsonify({"prompt": interpreter.context["prompt_var"]}), 200
 
-        return jsonify({'result': interpreter.output}), 200  
+        return jsonify({"output": interpreter.output}), 200
 
     except SemanticError as e:
         return jsonify({'error': str(e)}), 400
