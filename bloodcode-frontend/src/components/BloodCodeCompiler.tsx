@@ -1,31 +1,32 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {CodeEditor} from "./CodeEditor"; 
+import { CodeEditor } from "./CodeEditor";
 import { OutputDisplay } from "./OutputDisplay";
 import { ActionButtons } from "./ActionButtons";
-import { CodeOptionsComponent } from "./CodeOptions"; 
+import { CodeOptionsComponent } from "./CodeOptions";
 import { CodeOptions, codeTemplates } from "./CodeGenerator";
 
 export default function BloodCodeCompiler() {
-  const [code, setCode] = useState("");  
-  const [output, setOutput] = useState("");
-  const [isError, setIsError] = useState(false); 
-  const [selectedOption, setSelectedOption] = useState<CodeOptions | "">(""); 
-
+  const [code, setCode] = useState("");
+  const [output, setOutput] = useState<string[]>([]); 
+  const [isError, setIsError] = useState(false);
+  const [selectedOption, setSelectedOption] = useState<CodeOptions | "">("");
+  const [isPromptActive, setIsPromptActive] = useState(false);  
+  const [userInput, setUserInput] = useState("");  
 
   useEffect(() => {
     if (selectedOption) {
-      generateCode(selectedOption);  
+      generateCode(selectedOption);
     }
   }, [selectedOption]);
 
   const generateCode = (option: CodeOptions) => {
     const generatedCode = codeTemplates[option];
-    setCode((prevCode) => prevCode + (prevCode ? "\n" : "") + generatedCode);  
+    setCode((prevCode) => prevCode + (prevCode ? "\n" : "") + generatedCode);
   };
 
   const compile = async (action: string) => {
-    setOutput("Procesando...");
+    setOutput(["Procesando..."]);
     setIsError(false);
 
     try {
@@ -34,69 +35,75 @@ export default function BloodCodeCompiler() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code, action }),  
+        body: JSON.stringify({ code, action }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         if (action === 'tokens') {
-          setOutput(`Tokens: ${JSON.stringify(data.tokens, null, 2)}`);
+          setOutput([`Tokens: ${JSON.stringify(data.tokens, null, 2)}`]);
         } else if (action === 'ast') {
-          setOutput(`AST: ${JSON.stringify(data.ast, null, 2)}`);
+          setOutput([`AST: ${JSON.stringify(data.ast, null, 2)}`]);
         } else {
-          setOutput("Compilación exitosa. Ahora puedes ejecutar el código.");
+          setOutput(["Compilación exitosa. Ahora puedes ejecutar el código."]);
         }
         setIsError(false);
       } else {
-        setOutput(`Error: ${data.error || "Error desconocido"}`);
+        setOutput([`Error: ${data.error || "Error desconocido"}`]);
         setIsError(true);
       }
     } catch (err: any) {
-      setOutput(`Error: ${err.message || "No se pudo conectar con el servidor"}`);
+      setOutput([`Error: ${err.message || "No se pudo conectar con el servidor"}`]);
       setIsError(true);
     }
   };
 
-  const execute = async () => {
-    setOutput("Ejecutando...");
+  const execute = async (userInput = "") => {
     setIsError(false);
 
     try {
-        const response = await fetch("http://localhost:5000/execute", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ code }),
-        });
+      const response = await fetch("http://localhost:5000/execute", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code, userInput }), 
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (response.ok) {
-            if (data.prompt) {
-                const userInput = prompt(data.prompt); 
-                const inputResponse = await fetch("http://localhost:5000/execute", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ code, userInput }),
-                });
-
-                const inputData = await inputResponse.json();
-                setOutput(inputData.output.join("\n"));
-            } else {
-                setOutput(data.output.join("\n"));
-            }
-            setIsError(false);
+      if (response.ok) {
+        if (data.prompt) {
+          setIsPromptActive(true);
+          setOutput((prevOutput) => [...prevOutput, data.prompt]); 
         } else {
-            setOutput(`Error en la ejecución: ${data.error || "Error desconocido"}`);
-            setIsError(true);
+          setIsPromptActive(false);
+          setOutput((prevOutput) => {
+            const cleanedOutput = prevOutput.filter(line => !line.includes('Ingrese valor para'));  
+            return [...cleanedOutput, ...data.output];
+          });
         }
-    } catch (err: any) {
-        setOutput(`Error: ${err.message || "No se pudo conectar con el servidor"}`);
+      } else {
+        setOutput([`Error en la ejecución: ${data.error || "Error desconocido"}`]);
         setIsError(true);
+      }
+    } catch (err: any) {
+      setOutput([`Error: ${err.message || "No se pudo conectar con el servidor"}`]);
+      setIsError(true);
+    }
+  };
+
+  const handleUserInputKeyDown = async (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isPromptActive) {
+      if (e.key === 'Enter') {
+        await execute(userInput); 
+        setUserInput("");  
+      } else if (e.key === 'Backspace') {
+        setUserInput((prevInput) => prevInput.slice(0, -1)); 
+      } else if (e.key.length === 1) {
+        setUserInput((prevInput) => prevInput + e.key); 
+      }
     }
   };
 
@@ -115,8 +122,16 @@ export default function BloodCodeCompiler() {
             <CodeEditor code={code} setCode={setCode} />
           </div>
         </div>
-        <OutputDisplay output={output} isError={isError} />
+
+        <OutputDisplay
+          output={output}
+          isError={isError}
+          isPromptActive={isPromptActive}
+          handleUserInputKeyDown={handleUserInputKeyDown}
+          userInput={userInput}  
+        />
       </main>
     </div>
   );
 }
+

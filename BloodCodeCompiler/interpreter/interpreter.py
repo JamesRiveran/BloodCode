@@ -6,6 +6,7 @@ class Interpreter:
         self.context = {}
         self.functions = {}
         self.output = [] 
+        self.prompt_var = None
 
     def execute(self, node):
         if isinstance(node, BlockNode):
@@ -14,7 +15,7 @@ class Interpreter:
             return self.execute_declaration(node)
         elif isinstance(node, BinaryOpNode):
             return self.execute_binary_op(node)
-        if isinstance(node, NumberNode):
+        elif isinstance(node, NumberNode):
             if float(node.value).is_integer():
                 return int(node.value)  
             else:
@@ -50,29 +51,35 @@ class Interpreter:
             for expr in node.arguments:
                 result = self.execute(expr)
                 full_message += str(result)
-            self.output.append(full_message)
+            self.output.append(full_message) 
             return None
 
         elif node.identifier == 'EYES':
             for var in node.arguments:
                 var_type = self.env.get_variable_type(var.name)
-                value = input(f"Ingrese valor para {var.name}: ")
-                
-                if var_type == 'MARIA':  
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        raise Exception(f"Error: Se esperaba un valor numérico para '{var.name}'")
-                elif var_type == 'EILEEN':  
-                    value = str(value)
+
+                if 'input_var' in self.context:
+                    value = self.context['input_var']
+                    if var_type == 'MARIA':  
+                        try:
+                            value = int(value)
+                        except ValueError:
+                            raise Exception(f"Error: Se esperaba un valor numérico para '{var.name}'")
+                    elif var_type == 'EILEEN':  
+                        value = str(value)
+                    else:
+                        raise Exception(f"Tipo no soportado para 'Eyes': {var_type}")
+
+                    self.context[var.name] = value 
+                    del self.context['input_var']  
                 else:
-                    raise Exception(f"Tipo no soportado para 'Eyes': {var_type}")
-                
-                self.context[var.name] = value  
-            return None
+                    self.prompt_var = f"Ingrese valor para la variable {var.name}" 
+                    return None  
+
+            return None  
 
         if node.identifier.name in self.functions:
-            func = self.functions[node.identifier.name]  
+            func = self.functions[node.identifier.name]
 
             local_context = self.context.copy()
 
@@ -83,6 +90,7 @@ class Interpreter:
             return result
 
         raise Exception(f"Función no encontrada: {node.identifier.name}")
+
 
 
     def execute_block_with_context(self, block, context):

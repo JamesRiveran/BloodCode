@@ -55,14 +55,14 @@ def execute_code():
         analyzer.analyze(ast)
 
         interpreter = Interpreter(env)
-        
-        if user_input:  
+
+        if user_input:
             interpreter.context["input_var"] = user_input
-        
+
         interpreter.execute(ast)
 
-        if "prompt_var" in interpreter.context:  
-            return jsonify({"prompt": interpreter.context["prompt_var"]}), 200
+        if interpreter.prompt_var: 
+            return jsonify({"prompt": interpreter.prompt_var}), 200
 
         return jsonify({"output": interpreter.output}), 200
 
