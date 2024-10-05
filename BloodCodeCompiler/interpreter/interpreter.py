@@ -46,7 +46,7 @@ class Interpreter:
             else:
                 raise Exception(f"Nodo no soportado: {type(node)}")
         except Exception as e:
-            raise Exception(f"Error en la línea {node.number_line}: {str(e)}")
+            raise Exception(f"Error en la línea {node.line_number}: {str(e)}")
 
     def execute_function_call(self, node):
         try:
@@ -95,7 +95,7 @@ class Interpreter:
 
             raise Exception(f"Función no encontrada: {node.identifier.name}")
         except Exception as e:
-            raise Exception(f"Error en la línea {node.number_line}: {str(e)}")
+            raise Exception(f"Error en la línea {node.line_number}: {str(e)}")
 
 
     def execute_block_with_context(self, block, context):
@@ -215,7 +215,7 @@ class Interpreter:
             else:
                 raise Exception(f"Operador no soportado: {node.operator}")
         except Exception as e:
-            raise Exception(f"Error en la línea {node.number_line}: {str(e)}")
+            raise Exception(f"Error en la línea {node.line_number}: {str(e)}")
 
     def execute_unary_op(self, node):
         operand_value = self.execute(node.operand)

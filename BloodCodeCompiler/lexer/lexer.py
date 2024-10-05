@@ -2,10 +2,10 @@ import re
 from .tokens import tokens
 
 class Token:
-    def __init__(self, token_type, value, number_line):
+    def __init__(self, token_type, value, line_number):
         self.type = token_type  
         self.value = value      
-        self.number_line = number_line        
+        self.line_number = line_number        
 
     def __repr__(self):
         return f'Token({self.type}, {self.value}, Line: {self.line})'
@@ -14,7 +14,7 @@ class Token:
         return {
             "type": self.type,
             "value": self.value,
-            "number_line": self.number_line
+            "line_number": self.line_number
         }
 
 class Lexer:
@@ -22,7 +22,7 @@ class Lexer:
         self.code = code
         self.tokens = []
         self.position = 0
-        self.number_line = 1  # Iniciar el contador de líneas
+        self.line_number = 1  # Iniciar el contador de líneas
 
     def tokenize(self):
         while self.position < len(self.code):
@@ -33,12 +33,12 @@ class Lexer:
                 if match:
                     text = match.group(0)
                     if token_type == 'WHITESPACE':
-                        self.number_line += text.count('\n')  # Contar nuevas líneas
+                        self.line_number += text.count('\n')  # Contar nuevas líneas
                     elif token_type != 'WHITESPACE':
                         # Crear un nuevo objeto Token y agregarlo a la lista de tokens
-                        self.tokens.append(Token(token_type, text, self.number_line))
+                        self.tokens.append(Token(token_type, text, self.line_number))
                     self.position = match.end(0)
                     break
             if not match:
-                raise SyntaxError(f'Error de sintaxis en la línea {self.number_line}: token no reconocido en "{self.code[self.position:]}"')
+                raise SyntaxError(f'Error de sintaxis en la línea {self.line_number}: token no reconocido en "{self.code[self.position:]}"')
         return self.tokens

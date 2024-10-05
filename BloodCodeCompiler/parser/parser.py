@@ -16,7 +16,7 @@ class Parser:
 
     def check_token_type(self, token_type):
         if self.current_token.type != token_type:
-            raise SyntaxError(f"Se esperaba {token_type}, pero se encontró {self.current_token.type} en la línea {self.current_token.number_line}")
+            raise SyntaxError(f"Se esperaba {token_type}, pero se encontró {self.current_token.type} en la línea {self.current_token.line_number}")
 
     def consume_token(self):
         self.token_position += 1
@@ -36,11 +36,11 @@ class Parser:
         statements = []
         self.validate_and_consume_token('LBRACE')
         while self.current_token.type != 'RBRACE':
-            if self.token_position >= len(self.tokens):  # Control para evitar salir del rango
-                raise SyntaxError(f"Bloque no cerrado correctamente en la línea {self.current_token.number_line}")
+            if self.token_position >= len(self.tokens):  
+                raise SyntaxError(f"Bloque no cerrado correctamente en la línea {self.current_token.line_number}")
             statements.append(self.parse_statement())
         self.validate_and_consume_token('RBRACE')
-        return BlockNode(statements, self.current_token.number_line)
+        return BlockNode(statements, self.current_token.line_number)
     
     @error_handler
     def parse_statement(self):
@@ -81,9 +81,9 @@ class Parser:
         if self.current_token.type == 'ASSIGN':
             self.consume_token()
             expression = self.parse_expression()
-        number_line = self.current_token.number_line
+        line_number = self.current_token.line_number
         self.validate_and_consume_token('SEMICOLON') 
-        return DeclarationNode(identifier_list, variable_type, expression, number_line)
+        return DeclarationNode(identifier_list, variable_type, expression, line_number)
 
     @error_handler
     def parse_identifier_list(self):
@@ -97,9 +97,9 @@ class Parser:
     def parse_identifier(self):
         self.check_token_type('IDENTIFIER')
         name = self.current_token.value
-        number_line = self.current_token.number_line
+        line_number = self.current_token.line_number
         self.consume_token()
-        return IdentifierNode(name, number_line)
+        return IdentifierNode(name, line_number)
         
     @error_handler
     def parse_function_declaration(self):
@@ -115,11 +115,11 @@ class Parser:
 
         self.validate_and_consume_token('COLON') 
         return_type = self.current_token.value 
-        number_line = self.current_token.number_line
+        line_number = self.current_token.line_number
         self.consume_token()  
 
         block = self.parse_block() 
-        return FunctionDeclarationNode(func_name, params, return_type, block, number_line)
+        return FunctionDeclarationNode(func_name, params, return_type, block, line_number)
 
     @error_handler
     def parse_parameter_list(self):
@@ -140,7 +140,7 @@ class Parser:
         self.validate_and_consume_token('ECHOES')  
         expression = self.parse_expression()  
         self.validate_and_consume_token('SEMICOLON')  
-        return ReturnNode(expression, self.current_token.number_line)
+        return ReturnNode(expression, self.current_token.line_number)
 
     def parse_eyes_statement(self):
         self.validate_and_consume_token('EYES')   
@@ -148,7 +148,7 @@ class Parser:
         identifier = self.parse_identifier() 
         self.validate_and_consume_token('RPAREN')
         self.validate_and_consume_token('SEMICOLON') 
-        return FunctionCallNode('EYES', [identifier], self.current_token.number_line)
+        return FunctionCallNode('EYES', [identifier], self.current_token.line_number)
 
     def parse_dream_loop(self):
         self.validate_and_consume_token('DREAM')
@@ -156,7 +156,7 @@ class Parser:
         condition = self.parse_expression()
         self.validate_and_consume_token('RPAREN')
         block = self.parse_block()  
-        return LoopNode(None, condition, None, block, self.current_token.number_line)
+        return LoopNode(None, condition, None, block, self.current_token.line_number)
 
     @error_handler
     def parse_assignment_or_expression(self):
@@ -172,7 +172,7 @@ class Parser:
             return self.parse_assignment(identifier)
 
         else:
-            raise SyntaxError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.number_line}")
+            raise SyntaxError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.line_number}")
 
     @error_handler
     def parse_array_assignment_or_access(self, identifier):
@@ -184,9 +184,9 @@ class Parser:
             self.consume_token()  
             expression = self.parse_expression()  
             self.validate_and_consume_token('SEMICOLON')
-            return BinaryOpNode(BinaryOpNode(identifier, 'INDEX', index, self.current_token.number_line), 'ASSIGN', expression, self.current_token.number_line)
+            return BinaryOpNode(BinaryOpNode(identifier, 'INDEX', index, self.current_token.line_number), 'ASSIGN', expression, self.current_token.line_number)
         
-        return BinaryOpNode(identifier, 'INDEX', index, self.current_token.number_line)
+        return BinaryOpNode(identifier, 'INDEX', index, self.current_token.line_number)
 
     @error_handler
     def parse_function_call(self, identifier):
@@ -197,7 +197,7 @@ class Parser:
         self.validate_and_consume_token('RPAREN')
         self.validate_and_consume_token('SEMICOLON')
         
-        return FunctionCallNode(identifier, arguments, self.current_token.number_line)
+        return FunctionCallNode(identifier, arguments, self.current_token.line_number)
 
     @error_handler
     def parse_assignment(self, identifier):
@@ -210,7 +210,7 @@ class Parser:
         
         self.validate_and_consume_token('SEMICOLON')
         
-        return BinaryOpNode(identifier, 'ASSIGN', expression, self.current_token.number_line)
+        return BinaryOpNode(identifier, 'ASSIGN', expression, self.current_token.line_number)
 
     def parse_if_statement(self):
         self.validate_and_consume_token('INSIGHT')
@@ -222,7 +222,7 @@ class Parser:
         if self.current_token.type == 'MADNESS':
             self.consume_token()
             false_block = self.parse_block()
-        return IfStatementNode(condition, true_block, false_block, self.current_token.number_line)
+        return IfStatementNode(condition, true_block, false_block, self.current_token.line_number)
 
     def parse_nightmare_loop(self):
         self.validate_and_consume_token('NIGHTMARE')
@@ -240,7 +240,7 @@ class Parser:
 
         block = self.parse_block()
 
-        return LoopNode(init, condition, increment, block, self.current_token.number_line)
+        return LoopNode(init, condition, increment, block, self.current_token.line_number)
 
     def parse_pray(self):
         self.validate_and_consume_token('PRAY')
@@ -248,12 +248,12 @@ class Parser:
         expression = self.parse_expression()  
         self.validate_and_consume_token('RPAREN')
         self.validate_and_consume_token('SEMICOLON')
-        return FunctionCallNode('PRAY', [expression], self.current_token.number_line)
+        return FunctionCallNode('PRAY', [expression], self.current_token.line_number)
 
     def parse_rest_statement(self):
         self.validate_and_consume_token('REST')
         self.validate_and_consume_token('SEMICOLON')
-        return RestNode(self.current_token.number_line)
+        return RestNode(self.current_token.line_number)
 
     def parse_expression(self):
         if self.current_token.type == 'LBRACKET': 
@@ -264,7 +264,7 @@ class Parser:
                 if self.current_token.type == 'COMMA':
                     self.consume_token() 
             self.validate_and_consume_token('RBRACKET')  
-            return ArrayNode(elements, self.current_token.number_line)
+            return ArrayNode(elements, self.current_token.line_number)
         return self.parse_logical_or()
 
     def parse_binary_operation(self, parse_lower_precedence, operators):
@@ -273,7 +273,7 @@ class Parser:
             operator = self.current_token.type
             self.consume_token()
             right = parse_lower_precedence()
-            node = BinaryOpNode(node, operator, right, self.current_token.number_line)
+            node = BinaryOpNode(node, operator, right, self.current_token.line_number)
         return node
 
     def parse_logical_or(self):
@@ -299,7 +299,7 @@ class Parser:
             operator = self.current_token.type
             self.consume_token()
             operand = self.parse_unary()
-            return UnaryOpNode(operator, operand, self.current_token.number_line)
+            return UnaryOpNode(operator, operand, self.current_token.line_number)
         else:
             return self.parse_primary()
 
@@ -325,22 +325,22 @@ class Parser:
             return expr
 
         else:
-            raise SyntaxError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.number_line} --> {self.current_token.value}")
+            raise SyntaxError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.line_number} --> {self.current_token.value}")
 
     def parse_number(self):
         value = self.current_token.value
-        line_number = self.current_token.number_line
+        line_number = self.current_token.line_number
         self.consume_token()
         return NumberNode(float(value), line_number)
 
     def parse_string(self):
         value = self.current_token.value
-        line_number = self.current_token.number_line
+        line_number = self.current_token.line_number
         self.consume_token()
         return StringNode(value, line_number)
 
     def parse_boolean(self):
-        line_number = self.current_token.number_line
+        line_number = self.current_token.line_number
         value = True if self.current_token.type == 'TRUE' else False
         self.consume_token()
         return BooleanNode(value, line_number)
@@ -357,7 +357,7 @@ class Parser:
         self.consume_token()
         index = self.parse_expression()
         self.validate_and_consume_token('RBRACKET')
-        return BinaryOpNode(identifier, 'INDEX', index, self.current_token.number_line)
+        return BinaryOpNode(identifier, 'INDEX', index, self.current_token.line_number)
 
     def parse_function_call(self, identifier):
         self.consume_token()
@@ -365,7 +365,7 @@ class Parser:
         if self.current_token.type != 'RPAREN':
             arguments = self.parse_argument_list()
         self.validate_and_consume_token('RPAREN')
-        return FunctionCallNode(identifier, arguments, self.current_token.number_line)
+        return FunctionCallNode(identifier, arguments, self.current_token.line_number)
 
 
     def parse_argument_list(self):
@@ -377,7 +377,7 @@ class Parser:
 
     def parse_identifier(self):
         name = self.current_token.value
-        line_number = self.current_token.number_line
+        line_number = self.current_token.line_number
         self.consume_token()
         return IdentifierNode(name, line_number)
 
@@ -385,11 +385,11 @@ class Parser:
         statements = []
         while self.token_position < len(self.tokens): 
             statements.append(self.parse_statement()) 
-        return BlockNode(statements, self.current_token.number_line)
+        return BlockNode(statements, self.current_token.line_number)
 
     def parse_eyes(self):
         self.validate_and_consume_token('EYES')
         self.validate_and_consume_token('LPAREN')  
         prompt = self.parse_expression()  
         self.validate_and_consume_token('RPAREN') 
-        return FunctionCallNode('EYES', [prompt], self.current_token.number_line)
+        return FunctionCallNode('EYES', [prompt], self.current_token.line_number)
