@@ -1,13 +1,18 @@
 from flask import Flask, request, jsonify
-from BloodCodeCompiler.lexer.lexer import Lexer
-from BloodCodeCompiler.parser.parser import Parser
-from BloodCodeCompiler.interpreter.interpreter import Interpreter
-from BloodCodeCompiler.semantic_analyzer.SemanticAnalyzer import SemanticAnalyzer, SemanticError
-from BloodCodeCompiler.semantic_analyzer.TypeEnviroment import TypeEnvironment
+from lexer.lexer import Lexer
+from parser.parser import Parser
+from interpreter.interpreter import Interpreter
+from semantic_analyzer.TypeEnviroment import TypeEnvironment
+from semantic_analyzer.SemanticAnalyzer import SemanticAnalyzer
+from semantic_analyzer.SemanticAnalyzer import SemanticError
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app) 
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({'message': 'pong'}), 200
 
 @app.route('/compile', methods=['POST'])
 def compile_code():
@@ -72,4 +77,5 @@ def execute_code():
         return jsonify({'error': f"Error inesperado: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
