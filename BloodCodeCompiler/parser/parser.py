@@ -41,7 +41,7 @@ class Parser:
             statements.append(self.parse_statement())
         self.validate_and_consume_token('RBRACE')
         return BlockNode(statements, self.current_token.number_line)
-
+    
     @error_handler
     def parse_statement(self):
         parse_map = {
@@ -382,14 +382,9 @@ class Parser:
         return IdentifierNode(name, line_number)
 
     def parse_main_block(self):
-        self.validate_and_consume_token('HUNTERSDREAM')
-        self.validate_and_consume_token('LBRACE')
-        
         statements = []
-        while self.current_token.type != 'RBRACE': 
+        while self.token_position < len(self.tokens): 
             statements.append(self.parse_statement()) 
-        self.validate_and_consume_token('RBRACE')
-
         return BlockNode(statements, self.current_token.number_line)
 
     def parse_eyes(self):

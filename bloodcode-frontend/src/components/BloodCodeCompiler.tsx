@@ -14,6 +14,10 @@ export default function BloodCodeCompiler() {
   const [isPromptActive, setIsPromptActive] = useState(false);  
   const [userInput, setUserInput] = useState("");  
 
+  const clearOutput = () => {
+    setOutput([]);
+  };
+
   useEffect(() => {
     if (selectedOption) {
       generateCode(selectedOption);
@@ -128,7 +132,8 @@ export default function BloodCodeCompiler() {
           isError={isError}
           isPromptActive={isPromptActive}
           handleUserInputKeyDown={handleUserInputKeyDown}
-          userInput={userInput}  
+          userInput={userInput}
+          clearOutput={clearOutput}
         />
       </main>
     </div>
