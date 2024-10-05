@@ -1,7 +1,7 @@
 class TypeEnvironment:
     def __init__(self):
         self.scopes = [{}]  
-        self.functions = {}  
+        self.functions = {}
 
     def enter_scope(self):
         self.scopes.append({}) 
@@ -14,7 +14,7 @@ class TypeEnvironment:
 
     def declare_variable(self, name, var_type):
         if name in self.scopes[-1]:
-            raise Exception(f"Variable '{name}' ya ha sido declarada en el scope actual")
+            raise Exception(f"Variable '{name}' ya ha sido declarada en el ambito actual")
         self.scopes[-1][name] = var_type 
 
     def get_variable_type(self, name):
@@ -32,3 +32,9 @@ class TypeEnvironment:
         if name not in self.functions:
             raise Exception(f"Función '{name}' no ha sido declarada")
         return self.functions[name]
+
+    def is_variable_declared(self, name):
+        for scope in reversed(self.scopes):
+            if name in scope:
+                return True
+        return False

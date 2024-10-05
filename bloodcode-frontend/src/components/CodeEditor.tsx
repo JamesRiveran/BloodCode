@@ -5,7 +5,7 @@ import { autocompletion, completeFromList } from "@codemirror/autocomplete";
 import { StreamLanguage } from "@codemirror/language";
 
 const cycles = ["Nightmare", "Dream"];
-const declarations = ["Hunter", "Hunters", "GreatOnes", "Rom"];
+const declarations = ["Hunter", "GreatOnes", "Rom"];
 const types = ["Djura", "Eileen", "Blood", "Maria", "Gehrman"];
 const conditions = ["Insight", "Madness"];
 const breaks = ["Rest"];

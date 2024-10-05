@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from lexer.lexer import Lexer
+from lexer.lexer import Lexer, Token
 from parser.parser import Parser
 from interpreter.interpreter import Interpreter
 from semantic_analyzer.TypeEnviroment import TypeEnvironment
@@ -23,10 +23,12 @@ def compile_code():
 
         env = TypeEnvironment()
         lexer = Lexer(code)
-        tokens = lexer.tokenize()
+        tokens: list[Token] = lexer.tokenize()
 
         if action == 'tokens':
-            return jsonify({'tokens': tokens}), 200  
+            token_list = [token.to_dict() for token in tokens]
+            return jsonify({'tokens': token_list}), 200
+
 
         parser = Parser(tokens)
         ast = parser.parse()
