@@ -5,7 +5,7 @@ def error_handler(func):
         try:
             return func(self, *args, **kwargs)
         except Exception as e:
-            raise SyntaxError(f"Error en {func.__name__}: {str(e)} en la línea {self.current_token.number_line}")
+            raise SyntaxError(f"Error en {func.__name__}: {str(e)} ")
     return wrapper
 
 class Parser:
@@ -16,7 +16,7 @@ class Parser:
 
     def check_token_type(self, token_type):
         if self.current_token.type != token_type:
-            raise SyntaxError(f"Se esperaba {token_type}, pero se encontró {self.current_token.type}")
+            raise SyntaxError(f"Se esperaba {token_type}, pero se encontró {self.current_token.type} en la línea {self.current_token.number_line}")
 
     def consume_token(self):
         self.token_position += 1
@@ -37,7 +37,7 @@ class Parser:
         self.validate_and_consume_token('LBRACE')
         while self.current_token.type != 'RBRACE':
             if self.token_position >= len(self.tokens):  # Control para evitar salir del rango
-                raise SyntaxError(f"Bloque no cerrado correctamente")
+                raise SyntaxError(f"Bloque no cerrado correctamente en la línea {self.current_token.number_line}")
             statements.append(self.parse_statement())
         self.validate_and_consume_token('RBRACE')
         return BlockNode(statements, self.current_token.number_line)
@@ -172,7 +172,7 @@ class Parser:
             return self.parse_assignment(identifier)
 
         else:
-            raise ValueError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.number_line}")
+            raise SyntaxError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.number_line}")
 
     @error_handler
     def parse_array_assignment_or_access(self, identifier):

@@ -1,58 +1,21 @@
 from parser.ast import ASTNode, NumberNode, IdentifierNode, BinaryOpNode, StringNode, DeclarationNode, BlockNode, IfStatementNode, LoopNode, FunctionCallNode, RestNode, BooleanNode, UnaryOpNode, FunctionDeclarationNode, ReturnNode, ArrayNode
-from difflib import get_close_matches
 
-class SemanticAnalyzer:
-    def __init__(self, env):
-        self.env = env
-        self.reserved_keywords = [
-            'HuntersDream', 'Nightmare', 'Dream', 'Hunter', 'GreatOnes', 
-            'Djura', 'Eileen', 'Bloodbond', 'OldBlood', 'Vileblood', 'Blood', 
-            'Maria', 'Gehrman', 'Rom', 'Drunkenness', 'Rest', 'Insight', 'Madness', 
-            'Eyes', 'Pray', 'Echoes', 'Light', 'Darkness'
-        ]
-    
-    def analyze(self, node):
-        if isinstance(node, IdentifierNode):
-            self.check_identifier(node)
-        # Resto del código para otros nodos...
-
-    def check_identifier(self, node):
-        if not self.env.is_variable_declared(node.name):
-            # Buscar sugerencias usando una función de coincidencia
-            suggestion = self.suggest_correction(node.name)
-            error_message = f"Error: Identificador no declarado '{node.name}'"
-            if suggestion:
-                error_message += f". ¿Quisiste decir '{suggestion}'?"
-            raise SemanticError(error_message, node)
-
-    def suggest_correction(self, identifier):
-        # Usamos difflib.get_close_matches para sugerir la palabra más cercana
-        suggestions = get_close_matches(identifier, self.reserved_keywords, n=1)
-        return suggestions[0] if suggestions else None
-
-class SemanticError(Exception):
+class SemanticError(Exception): 
     def __init__(self, message, node=None):
         self.message = message
         self.node = node
         super().__init__(self._format_message())
 
     def _format_message(self):
-        if self.node and hasattr(self.node, 'line'):
-            return f"Error semántico en la línea {self.node.line}: {self.message}"
+        if self.node:
+            return f"Error semántico: {self.message} en el nodo {type(self.node).__name__}"
         else:
             return f"Error semántico: {self.message}"
-
 
 
 class SemanticAnalyzer:
     def __init__(self, env):
         self.env = env
-        self.reserved_keywords = [
-            'HuntersDream', 'Nightmare', 'Dream', 'Hunter', 'GreatOnes', 
-            'Djura', 'Eileen', 'Bloodbond', 'OldBlood', 'Vileblood', 'Blood', 
-            'Maria', 'Gehrman', 'Rom', 'Drunkenness', 'Rest', 'Insight', 'Madness', 
-            'Eyes', 'Pray', 'Echoes', 'Light', 'Darkness'
-        ]
 
     def analyze(self, node):
         if isinstance(node, BlockNode):
@@ -69,7 +32,6 @@ class SemanticAnalyzer:
         elif isinstance(node, StringNode):
             return 'EILEEN' 
         elif isinstance(node, IdentifierNode):
-            self.check_identifier(node)
             return self.env.get_variable_type(node.name)
         elif isinstance(node, ArrayNode):
             return self.analyze_array(node)
@@ -87,21 +49,7 @@ class SemanticAnalyzer:
             return 'BLOOD'
         else:
             raise SemanticError(f"Nodo no soportado: {type(node)}", node)
-        
-    def check_identifier(self, node):
-        if not self.env.is_variable_declared(node.name):
-            # Buscar sugerencias usando una función de coincidencia
-            suggestion = self.suggest_correction(node.name)
-            error_message = f"Error: Identificador no declarado '{node.name}' en la línea {node.line}"
-            if suggestion:
-                error_message += f". ¿Quisiste decir '{suggestion}'?"
-            raise SemanticError(error_message, node)
-        
-    def suggest_correction(self, identifier):
-        declared_variables = [name for scope in self.env.scopes for name in scope.keys()]
-        suggestions = get_close_matches(identifier, self.reserved_keywords + declared_variables, n=1)
-        return suggestions[0] if suggestions else None
-    
+
     def analyze_block(self, node):
         for statement in node.statements:
             self.analyze(statement)
@@ -112,13 +60,12 @@ class SemanticAnalyzer:
             self.env.declare_variable(identifier.name, var_type)
         if node.expression:
             expr_type = self.analyze(node.expression).upper()
-            if isinstance(var_type, tuple):  # Si es un array
+            if isinstance(var_type, tuple):  
                 if expr_type != 'ARRAY':
                     raise SemanticError(f"Se esperaba un array para la variable '{identifier.name}', pero se encontró {expr_type}", node)
             else:
                 if expr_type != var_type:
                     raise SemanticError(f"Error de tipo: Se esperaba '{var_type}' para la variable '{identifier.name}', pero se encontró '{expr_type}'", node)
-
 
     def analyze_binary_op(self, node):
         left_type = self.analyze(node.left).upper()
