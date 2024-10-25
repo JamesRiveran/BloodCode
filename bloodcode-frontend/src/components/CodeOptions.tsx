@@ -26,6 +26,7 @@ export const CodeOptionsComponent: React.FC<CodeOptionsProps> = ({ selectedOptio
           <SelectItem className="hover:bg-primary" value="operationSyntax">Sintaxis - Operaciones</SelectItem>
           <SelectItem className="hover:bg-primary" value="semantics">Semántica</SelectItem>
           <SelectItem className="hover:bg-primary" value="dataTypes">Tipos de datos</SelectItem>
+          <SelectItem className="hover:bg-primary" value="vectors">Vectores</SelectItem>
         </SelectContent>
       </Select>
     </div>

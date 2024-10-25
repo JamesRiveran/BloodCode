@@ -62,7 +62,7 @@ class Parser:
         else:
             return self.parse_expression()
         
-    @error_handler    
+    @error_handler
     def parse_declaration(self):
         self.validate_and_consume_token('HUNTER')  
         identifier_list = self.parse_identifier_list() 
@@ -73,14 +73,22 @@ class Parser:
 
         if self.current_token.type == 'LBRACKET': 
             self.consume_token()  
-            size = self.parse_expression() 
-            self.validate_and_consume_token('RBRACKET')  
-            variable_type = (variable_type, size)  
+            if self.current_token.type == 'RBRACKET': 
+                self.consume_token()
+                variable_type = (variable_type, None)  
+            else:
+                size = self.parse_expression()
+                self.validate_and_consume_token('RBRACKET')
+                variable_type = (variable_type, size) 
 
         expression = None
         if self.current_token.type == 'ASSIGN':
             self.consume_token()
-            expression = self.parse_expression()
+            if self.current_token.type == 'LBRACKET':
+                expression = self.parse_array()
+            else:
+                expression = self.parse_expression()
+
         line_number = self.current_token.line_number
         self.validate_and_consume_token('SEMICOLON') 
         return DeclarationNode(identifier_list, variable_type, expression, line_number)
@@ -393,3 +401,15 @@ class Parser:
         prompt = self.parse_expression()  
         self.validate_and_consume_token('RPAREN') 
         return FunctionCallNode('EYES', [prompt], self.current_token.line_number)
+    
+    @error_handler
+    def parse_array(self):
+        elements = []
+        self.validate_and_consume_token('LBRACKET')  
+        while self.current_token.type != 'RBRACKET':
+            elements.append(self.parse_expression())  
+            if self.current_token.type == 'COMMA':
+                self.consume_token()  
+        self.validate_and_consume_token('RBRACKET')
+        return ArrayNode(elements, self.current_token.line_number)
+

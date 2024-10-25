@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 
-export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes';
+export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectors';
+
 
 interface CodeGeneratorProps {
   option: CodeOptions;
@@ -72,6 +73,32 @@ Pray("Booleano: ");
 Insight (booleano) {
   Pray("El valor booleano es verdadero.");
 }
+`,
+vectors: 
+`Hunter abc: Maria[5];
+abc[0] => 10;
+abc[1] => 20;
+abc[2] => 30;
+abc[3] => 40;
+abc[4] => 50;
+
+Pray(abc[1]); 
+Pray(abc[2] + abc[3]);  
+abc[4] => abc[0] + abc[4]; 
+
+Pray(abc[4]); 
+
+Hunter numeros: Maria[5] => [1, 2, 3, 4, 5];
+
+Pray(numeros[0]);  
+Pray(numeros[1]);
+Pray(numeros[2]);  
+Pray(numeros[3]); 
+Pray(numeros[4]); 
+
+Hunter suma: Maria => numeros[0] + numeros[1] + numeros[2];
+Pray("La suma de los tres primeros números es:");
+Pray(suma);  
 `,
 };
 
