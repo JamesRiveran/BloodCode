@@ -55,8 +55,8 @@ class SemanticAnalyzer:
     def analyze_number(self, node):
         if float(node.value).is_integer():
             return 'MARIA'
-        else:
-            return 'GEHRMAN'
+        return 'GEHRMAN'
+
 
     def analyze_string(self, node):
         return 'EILEEN'
@@ -74,28 +74,28 @@ class SemanticAnalyzer:
 
     def analyze_declaration(self, node):
         var_type = node.var_type
-        if isinstance(var_type, tuple):
-            element_type = var_type[0].upper() 
-            size_expr = var_type[1] 
+        if isinstance(var_type, tuple): 
+            element_type = var_type[0].upper()
+            size_expr = var_type[1]
 
             if size_expr:
-                self._validate_array_size(size_expr, node.identifier_list[0], node)
+                size_type = self.analyze(size_expr)
+                if size_type != 'MARIA':
+                    raise SemanticError(f"El tamaño del array '{node.identifier_list[0].name}' debe ser de tipo 'MARIA'.")
             array_type = (element_type, 'ARRAY')
         else:
-            element_type = var_type.upper()  
-        
+            array_type = var_type.upper()
+
         for identifier in node.identifier_list:
-            if isinstance(var_type, tuple): 
-                self.env.declare_variable(identifier.name, (element_type, 'ARRAY'))
-            else:  
-                self.env.declare_variable(identifier.name, var_type)
+            self.env.declare_variable(identifier.name, array_type)
 
         if node.expression:
             expr_type = self.analyze(node.expression)
             if isinstance(var_type, tuple): 
                 self._validate_array_declaration(var_type, expr_type, identifier, node)
             else:
-                self._validate_type_match(element_type, expr_type.upper(), identifier, node)
+                self._validate_type_match(array_type, expr_type.upper(), identifier, node)
+
 
     def _validate_array_size(self, size, identifier, node):
         size_type = self.analyze(size)
@@ -127,39 +127,54 @@ class SemanticAnalyzer:
         left_type = self.analyze(node.left)
         right_type = self.analyze(node.right)
 
-        if isinstance(left_type, tuple):
-            left_type = left_type[0].upper() 
-        else:
-            left_type = left_type.upper()
+        if node.operator == 'INDEX':
+            if not isinstance(left_type, tuple) or left_type[1] != 'ARRAY':
+                raise SemanticError(f"{node.left.name} no es un array")
+            if right_type != 'MARIA':
+                raise SemanticError(f"El índice debe ser de tipo 'MARIA', pero se encontró '{right_type}'")
+            return left_type[0]
 
-        if isinstance(right_type, tuple):
-            right_type = right_type[0].upper()
-        else:
-            right_type = right_type.upper()
+        if node.operator == 'ASSIGN':
+            if isinstance(node.left, IdentifierNode):
+                if left_type != right_type:
+                    raise SemanticError(f"No se puede asignar un valor de tipo '{right_type}' a una variable de tipo '{left_type}'", node)
+                return left_type  
+            
+            elif isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':
+                array_type = self.analyze(node.left.left)
+                
+                if not isinstance(array_type, tuple) or array_type[1] != 'ARRAY':
+                    raise SemanticError(f"Acceso inválido: {node.left.left.name} no es un array", node)
+                
+                element_type = array_type[0]
+                if element_type != right_type:
+                    raise SemanticError(f"No se puede asignar valor de tipo '{right_type}' a un elemento de tipo '{element_type}' en el array", node)
+                
+                index_type = self.analyze(node.left.right)
+                if index_type != 'MARIA':
+                    raise SemanticError(f"El índice del array debe ser de tipo 'MARIA', pero se encontró '{index_type}'", node)
+                
+                return element_type 
 
         if node.operator in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
             return self._analyze_arithmetic_op(left_type, right_type, node)
-
-        elif node.operator == 'ASSIGN':
-            return self._analyze_assignment_op(node, left_type, right_type)
-
-        elif node.operator == 'INDEX':
-            return self._analyze_index_op(node, left_type, right_type)
-
-        elif node.operator in ['EQUAL', 'NOT', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL']:
+        if node.operator in ['EQUAL', 'NOT', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL']:
             return self._analyze_comparison_op(left_type, right_type, node)
-
-        elif node.operator in ['BLOODBOND', 'OLDBLOOD', 'VILEBLOOD']:
+        if node.operator in ['BLOODBOND', 'OLDBLOOD', 'VILEBLOOD']:
             return self._analyze_logical_op(left_type, right_type, node)
 
-        else:
-            raise SemanticError(f"Operador no soportado: {node.operator}", node)
+        raise SemanticError(f"Operador no soportado: {node.operator}", node)
 
-        
     def _analyze_arithmetic_op(self, left_type, right_type, node):
-        if left_type != 'MARIA' or right_type != 'MARIA':
-            raise SemanticError(f"Operación aritmética requiere ambos operandos de tipo 'MARIA', pero se encontró '{left_type}' y '{right_type}'", node)
+        if left_type.upper() != 'MARIA' or right_type.upper() != 'MARIA':
+            raise SemanticError(
+                f"Operación aritmética requiere ambos operandos de tipo 'MARIA', "
+                f"pero se encontró '{left_type}' y '{right_type}'",
+                node
+            )
         return 'MARIA'
+
+
 
     def _analyze_assignment_op(self, node, left_type, right_type):
         if isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':
@@ -275,16 +290,20 @@ class SemanticAnalyzer:
     @semantic_error_handler
     def analyze_function_declaration(self, node):
         param_types = [param_type for _, param_type in node.parameters]
-        return_type = node.return_type
+        return_type = node.return_type.upper() 
         self.env.declare_function(node.name.name, param_types, return_type)
         self.env.enter_scope()
+
         for param_name, param_type in node.parameters:
             self.env.declare_variable(param_name.name, param_type)
+
         self.analyze(node.block)
-        if return_type != 'ROM':  
+
+        if return_type != 'ROM': 
             if not self.has_return(node.block):
-                raise SemanticError(f"Error: La función '{node.name.name}' debe tener una instrucción de retorno de tipo {return_type}")
+                raise SemanticError(f"La función '{node.name.name}' debe tener una instrucción de retorno de tipo '{return_type}'", node)
         self.env.exit_scope()
+
 
     @semantic_error_handler
     def has_return(self, block_node):
@@ -300,5 +319,10 @@ class SemanticAnalyzer:
 
     @semantic_error_handler
     def analyze_return(self, node):
-        return_type = self.analyze(node.expression)
+        return_type = self.analyze(node.expression).upper()
+        if return_type != 'MARIA':
+            raise SemanticError(
+                f"Error de tipo en retorno: se esperaba 'MARIA', pero se encontró '{return_type}'",
+                node
+            )
         return return_type

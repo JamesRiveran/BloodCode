@@ -64,22 +64,22 @@ class Parser:
         
     @error_handler
     def parse_declaration(self):
-        self.validate_and_consume_token('HUNTER')  
-        identifier_list = self.parse_identifier_list() 
-        self.validate_and_consume_token('COLON')  
+        self.validate_and_consume_token('HUNTER')
+        identifier_list = self.parse_identifier_list()
+        self.validate_and_consume_token('COLON')
 
-        variable_type = self.current_token.type
+        var_type = self.current_token.type
         self.consume_token()
 
-        if self.current_token.type == 'LBRACKET': 
-            self.consume_token()  
-            if self.current_token.type == 'RBRACKET': 
+        if self.current_token.type == 'LBRACKET':
+            self.consume_token()
+            if self.current_token.type == 'RBRACKET':
                 self.consume_token()
-                variable_type = (variable_type, None)  
-            else:
+                var_type = (var_type, None)
+            else:  
                 size = self.parse_expression()
                 self.validate_and_consume_token('RBRACKET')
-                variable_type = (variable_type, size) 
+                var_type = (var_type, size)
 
         expression = None
         if self.current_token.type == 'ASSIGN':
@@ -89,9 +89,8 @@ class Parser:
             else:
                 expression = self.parse_expression()
 
-        line_number = self.current_token.line_number
-        self.validate_and_consume_token('SEMICOLON') 
-        return DeclarationNode(identifier_list, variable_type, expression, line_number)
+        self.validate_and_consume_token('SEMICOLON')
+        return DeclarationNode(identifier_list, var_type, expression, self.current_token.line_number)
 
     @error_handler
     def parse_identifier_list(self):
@@ -170,18 +169,13 @@ class Parser:
     def parse_assignment_or_expression(self):
         identifier = self.parse_identifier()
 
-        if self.current_token.type == 'LBRACKET':
+        if self.current_token.type == 'LBRACKET': 
             return self.parse_array_assignment_or_access(identifier)
-
-        elif self.current_token.type == 'LPAREN':
-            return self.parse_function_call(identifier)
-
-        elif self.current_token.type == 'ASSIGN':
+        elif self.current_token.type == 'ASSIGN': 
             return self.parse_assignment(identifier)
-
         else:
-            raise SyntaxError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.line_number}")
-
+            return self.parse_expression()
+        
     @error_handler
     def parse_array_assignment_or_access(self, identifier):
         self.consume_token()  

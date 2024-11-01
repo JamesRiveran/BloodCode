@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
-export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectors';
-
+export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectors' | 'dataEntry';
 
 interface CodeGeneratorProps {
   option: CodeOptions;
@@ -74,7 +74,7 @@ Insight (booleano) {
   Pray("El valor booleano es verdadero.");
 }
 `,
-vectors: 
+  vectors: 
 `Hunter abc: Maria[5];
 abc[0] => 10;
 abc[1] => 20;
@@ -99,6 +99,12 @@ Pray(numeros[4]);
 Hunter suma: Maria => numeros[0] + numeros[1] + numeros[2];
 Pray("La suma de los tres primeros números es:");
 Pray(suma);  
+`,
+  dataEntry: 
+`Hunter nombre: Eileen;
+Eyes(nombre);
+Pray("El nombre del usuario es: ");
+Pray(nombre);
 `,
 };
 
