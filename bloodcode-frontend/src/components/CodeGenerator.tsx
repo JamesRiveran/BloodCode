@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
-export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectorsSyntax' | 'dataEntry' | 'arraysSyntax' | 'whileSyntax' | 'forSyntax' | 'logicSyntax';
+export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'pemdas' | 'dataTypes' | 'vectorsSyntax' | 'dataEntry' | 'arraysSyntax' | 'whileSyntax' | 'forSyntax' | 'logicSyntax';
 
 interface CodeGeneratorProps {
   option: CodeOptions;
@@ -46,18 +45,61 @@ Pray(resultado);
 `Hunter a: Maria => 10;
 Hunter b: Maria => 5;
 Hunter c: Maria => 2;
-Hunter resultado: Maria;
+Hunter d: Maria => 8;
+Hunter resultado1, resultado2, resultado3: Maria;
 
-resultado => a + (b * c);
-Pray("El resultado es:");
-Pray(resultado);
+resultado1 => a + (b * c);  
+resultado2 => (a - b) / c; 
+resultado3 => d * (a + b - c); 
+
+Pray("Resultados de las operaciones:");
+
+Pray("Resultado 1 (a + (b * c)):");
+Pray(resultado1);
+
+Pray("Resultado 2 ((a - b) / c):");
+Pray(resultado2);
+
+Pray("Resultado 3 (d * (a + b - c)):");
+Pray(resultado3);
 `,
   semantics: 
-`Hunter x: Maria => 5;
-Hunter resultado: Maria => x + 3;
+`
+GreatOnes calcularArea(base: Maria, altura: Maria): Maria {
+    Echoes (base * altura / 2);
+}
 
-Pray("El resultado de x + 3 es:");
-Pray(resultado); 
+GreatOnes saludar(nombre: Eileen): Rom {
+    Pray("Hola, " + nombre + "! Bienvenido a BloodCode.");
+}
+
+Hunter nombreUsuario: Eileen;
+Eyes(nombreUsuario);
+
+Pray("Iniciando cálculos...");
+
+Hunter base: Maria => 5;
+Hunter altura: Maria => 10;
+Hunter area: Maria;
+
+area => calcularArea(base, altura);
+Pray("El área calculada es:");
+Pray(area);
+
+saludar(nombreUsuario);
+
+Insight (area > 20) {
+    Pray("El área es mayor que 20.");
+} Madness {
+    Pray("El área es 20 o menor.");
+}
+
+Dream (base > 0) {
+    Pray("Reduciendo la base en 1.");
+    base => base - 1;
+}
+Pray("El valor final de base es:");
+Pray(base);
 `,
   dataTypes: 
 `Hunter entero: Maria => 42;
@@ -95,11 +137,10 @@ Pray(abc[4]);
 
 Hunter numeros: Maria[5] => [1, 2, 3, 4, 5];
 
-Pray(numeros[0]);  
-Pray(numeros[1]);
-Pray(numeros[2]);  
-Pray(numeros[3]); 
-Pray(numeros[4]); 
+Pray("Contenido del array numeros:");
+Nightmare (Hunter i: Maria => 0; i < 5; i => i + 1;) {
+    Pray(numeros[i]);
+}
 
 Hunter suma: Maria => numeros[0] + numeros[1] + numeros[2];
 Pray("La suma de los tres primeros números es:");
@@ -187,6 +228,10 @@ Pray(b OldBlood a);
 
 Pray(Vileblood a);
 Pray(Vileblood b);
+`,
+pemdas:
+`Hunter x: Maria => 8 + (15 / (3 + 2) - 4 * 2) * (6 + 8 / (3 - 1)) - 7 * (9 - 5 / (8 - 6));
+Pray(x);
 `
 };
 
