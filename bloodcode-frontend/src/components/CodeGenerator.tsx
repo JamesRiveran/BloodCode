@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
-export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectors' | 'dataEntry';
+export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectors' | 'dataEntry' | 'arrays';
 
 interface CodeGeneratorProps {
   option: CodeOptions;
@@ -105,6 +105,31 @@ Pray(suma);
 Eyes(nombre);
 Pray("El nombre del usuario es: ");
 Pray(nombre);
+`,
+  arrays: 
+`Hunter matriz: Maria[3].[3];
+matriz[0].[0] => 10;
+matriz[0].[1] => 20;
+matriz[0].[2] => 30;
+matriz[1].[0] => 40;
+matriz[1].[1] => 50;
+matriz[1].[2] => 60;
+matriz[2].[0] => 70;
+matriz[2].[1] => 80;
+matriz[2].[2] => 90;
+
+Pray("Acceso a elementos individuales de la matriz:");
+Pray(matriz[0].[0]);
+Pray(matriz[1].[1]);
+Pray(matriz[2].[2]);
+
+Hunter suma_fila: Maria => matriz[0].[0] + matriz[0].[1] + matriz[0].[2];
+Pray("La suma de la primera fila es:");
+Pray(suma_fila);
+
+Hunter total_suma: Maria => matriz[0].[0] + matriz[1].[1];
+Pray("Suma de elementos específicos:");
+Pray(total_suma);
 `,
 };
 

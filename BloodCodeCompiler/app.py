@@ -29,7 +29,6 @@ def compile_code():
             token_list = [token.to_dict() for token in tokens]
             return jsonify({'tokens': token_list}), 200
 
-
         parser = Parser(tokens)
         ast = parser.parse()
 

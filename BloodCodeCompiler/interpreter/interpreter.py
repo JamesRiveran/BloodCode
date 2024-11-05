@@ -163,71 +163,105 @@ class Interpreter:
         for identifier in node.identifier_list:
             value = None
 
-            if isinstance(node.var_type, tuple): 
-                element_type, size_expr = node.var_type
-                size_value = self.execute(size_expr) if size_expr else 0
+            if isinstance(node.var_type, tuple):
+                element_type = node.var_type[0]
+                size1 = self.execute(node.var_type[1]) if node.var_type[1] else 0
 
-                if element_type == 'MARIA':
-                    value = [0] * size_value
-                elif element_type == 'EILEEN':
-                    value = [""] * size_value
-                else:
-                    raise Exception(f"Tipo no soportado para el array: {element_type}")
+                if len(node.var_type) == 2:
+                    if isinstance(node.expression, ArrayNode):
+                        init_value = self.execute(node.expression)
+                        if len(init_value) != size1:
+                            raise Exception(f"Tamaño del array '{identifier.name}' no coincide con la inicialización.")
+                        value = init_value
+                    else:
+                        value = [0] * size1 if element_type == 'MARIA' else [""] * size1
 
-                if isinstance(node.expression, ArrayNode):
-                    init_value = self.execute(node.expression)
-                    if len(init_value) != size_value:
-                        raise Exception(f"Tamaño del array '{identifier.name}' no coincide con la inicialización.")
-                    value = init_value
+                elif len(node.var_type) == 3:
+                    size2 = self.execute(node.var_type[2]) if node.var_type[2] else 0
+                    value = [[0] * size2 for _ in range(size1)] if element_type == 'MARIA' else [[""] * size2 for _ in range(size1)]
 
-            elif node.expression:  
+                    if isinstance(node.expression, ArrayNode):
+                        init_value = self.execute(node.expression)
+                        if len(init_value) != size1:
+                            raise Exception(f"Tamaño de la matriz '{identifier.name}' no coincide con la inicialización.")
+                        for i, row in enumerate(init_value):
+                            if len(row) != size2:
+                                raise Exception(f"Tamaño de fila {i} en la matriz '{identifier.name}' no coincide con la inicialización.")
+                        value = init_value
+
+            elif node.expression:
                 value = self.execute(node.expression)
             else:
-                if node.var_type == 'EILEEN':
-                    value = ""
-                elif node.var_type == 'MARIA':
-                    value = 0
+                value = "" if node.var_type == 'EILEEN' else 0
             self.context[identifier.name] = value
         return None
 
+    def _get_base_identifier_name(self, node):
+        current_node = node
+        while isinstance(current_node, BinaryOpNode) and current_node.operator == 'INDEX':
+            current_node = current_node.left
+        if isinstance(current_node, IdentifierNode):
+            return current_node.name
+        else:
+            raise Exception("Acceso de matriz inválido: falta el identificador base.")
 
     def execute_binary_op(self, node):
         if node.operator == 'ASSIGN':
-            right_value = self.execute(node.right) 
+            right_value = self.execute(node.right)
 
             if isinstance(node.left, IdentifierNode):
-                self.context[node.left.name] = right_value 
+                self.context[node.left.name] = right_value
                 return right_value
 
             elif isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':
-                array = self.context.get(node.left.left.name)
+                base_name = self._get_base_identifier_name(node.left)
+                array = self.context.get(base_name)
                 if array is None:
-                    raise Exception(f"Variable no definida: {node.left.left.name}")
-                index = self.execute(node.left.right)
-                if not isinstance(index, int) or index < 0 or index >= len(array):
-                    raise Exception(f"Índice fuera de rango en la variable '{node.left.left.name}'")
-                array[index] = right_value  
+                    raise Exception(f"Variable no definida: {base_name}")
+
+                if isinstance(array[0], list):  
+                    row_index = self.execute(node.left.left.right)
+                    col_index = self.execute(node.left.right)
+                    if not (0 <= row_index < len(array)) or not (0 <= col_index < len(array[0])):
+                        raise Exception(f"Índice fuera de rango en la matriz '{base_name}'")
+                    array[row_index][col_index] = right_value
+
+                else:  
+                    index = self.execute(node.left.right)
+                    if not (0 <= index < len(array)):
+                        raise Exception(f"Índice fuera de rango en el vector '{base_name}'")
+                    array[index] = right_value
+
                 return right_value
 
         elif node.operator == 'INDEX':
-            array = self.context.get(node.left.name)
+            base_name = self._get_base_identifier_name(node.left)
+            array = self.context.get(base_name)
             if array is None:
-                raise Exception(f"Variable no definida: {node.left.name}")
-            index = self.execute(node.right)
-            if not isinstance(index, int) or index < 0 or index >= len(array):
-                raise Exception(f"Índice fuera de rango en la variable '{node.left.name}'")
-            return array[index]
+                raise Exception(f"Variable no definida: {base_name}")
+
+            if isinstance(array[0], list):  
+                row_index = self.execute(node.left.right)
+                col_index = self.execute(node.right)
+                if not (0 <= row_index < len(array)) or not (0 <= col_index < len(array[0])):
+                    raise Exception(f"Índice fuera de rango en la matriz '{base_name}'")
+                return array[row_index][col_index]
+
+            else:  
+                index = self.execute(node.right)
+                if not (0 <= index < len(array)):
+                    raise Exception(f"Índice fuera de rango en el vector '{base_name}'")
+                return array[index]
 
         left_value = self.execute(node.left)
         right_value = self.execute(node.right)
-        
         if node.operator in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
             return self._execute_arithmetic_op(node.operator, left_value, right_value)
         if node.operator in ['EQUAL', 'NOT', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL']:
             return self._execute_comparison_op(node.operator, left_value, right_value)
         if node.operator in ['BLOODBOND', 'OLDBLOOD', 'VILEBLOOD']:
             return self._execute_logical_op(node.operator, left_value, right_value)
-        
+
         raise Exception(f"Operador no soportado: {node.operator}")
 
     def _execute_arithmetic_op(self, operator, left_value, right_value):

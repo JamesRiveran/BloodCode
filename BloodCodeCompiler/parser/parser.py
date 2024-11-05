@@ -73,13 +73,21 @@ class Parser:
 
         if self.current_token.type == 'LBRACKET':
             self.consume_token()
-            if self.current_token.type == 'RBRACKET':
+            if self.current_token.type == 'RBRACKET': 
                 self.consume_token()
                 var_type = (var_type, None)
             else:  
-                size = self.parse_expression()
+                size1 = self.parse_expression() 
                 self.validate_and_consume_token('RBRACKET')
-                var_type = (var_type, size)
+
+                if self.current_token.type == 'DOT' and self.tokens[self.token_position + 1].type == 'LBRACKET':
+                    self.consume_token() 
+                    self.consume_token() 
+                    size2 = self.parse_expression()  
+                    self.validate_and_consume_token('RBRACKET')
+                    var_type = (var_type, size1, size2)  
+                else:
+                    var_type = (var_type, size1) 
 
         expression = None
         if self.current_token.type == 'ASSIGN':
@@ -91,6 +99,8 @@ class Parser:
 
         self.validate_and_consume_token('SEMICOLON')
         return DeclarationNode(identifier_list, var_type, expression, self.current_token.line_number)
+
+
 
     @error_handler
     def parse_identifier_list(self):
@@ -169,12 +179,25 @@ class Parser:
     def parse_assignment_or_expression(self):
         identifier = self.parse_identifier()
 
-        if self.current_token.type == 'LBRACKET': 
-            return self.parse_array_assignment_or_access(identifier)
-        elif self.current_token.type == 'ASSIGN': 
-            return self.parse_assignment(identifier)
+        if self.current_token.type == 'LBRACKET':
+            access_node = self.parse_matrix_or_array_access(identifier)
+            
+            if self.current_token.type == 'ASSIGN':
+                self.consume_token()  
+                expression = self.parse_expression()
+                self.validate_and_consume_token('SEMICOLON')
+                return BinaryOpNode(access_node, 'ASSIGN', expression, identifier.line_number)
+            
+            return access_node
+
+        elif self.current_token.type == 'ASSIGN':
+            self.consume_token()
+            expression = self.parse_expression()
+            self.validate_and_consume_token('SEMICOLON')
+            return BinaryOpNode(identifier, 'ASSIGN', expression, identifier.line_number)
+        
         else:
-            return self.parse_expression()
+            return identifier
         
     @error_handler
     def parse_array_assignment_or_access(self, identifier):
@@ -225,6 +248,55 @@ class Parser:
             self.consume_token()
             false_block = self.parse_block()
         return IfStatementNode(condition, true_block, false_block, self.current_token.line_number)
+    
+    @error_handler
+    def parse_primary(self):
+        if self.current_token.type == 'NUMBER':
+            return self.parse_number()
+
+        elif self.current_token.type == 'STRING':
+            return self.parse_string()
+
+        elif self.current_token.type in ('TRUE', 'FALSE'):
+            return self.parse_boolean()
+
+        elif self.current_token.type == 'IDENTIFIER':
+            identifier = self.parse_identifier()
+            if self.current_token.type == 'LBRACKET':
+                return self.parse_matrix_or_array_access(identifier)
+            elif self.current_token.type == 'LPAREN':
+                return self.parse_function_call(identifier)
+            return identifier
+
+        elif self.current_token.type == 'LPAREN':
+            self.consume_token()
+            expr = self.parse_expression()
+            self.validate_and_consume_token('RPAREN')
+            return expr
+
+        else:
+            raise SyntaxError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.line_number} --> {self.current_token.value}")
+
+    @error_handler
+    def parse_matrix_or_array_access(self, identifier):
+        self.consume_token()  
+        index1 = self.parse_expression()  
+        self.validate_and_consume_token('RBRACKET')
+
+        if self.current_token.type == 'DOT' and self.tokens[self.token_position + 1].type == 'LBRACKET':
+            self.consume_token()  
+            self.consume_token()  
+            index2 = self.parse_expression()
+            self.validate_and_consume_token('RBRACKET')
+
+            return BinaryOpNode(
+                BinaryOpNode(identifier, 'INDEX', index1, identifier.line_number),
+                'INDEX',
+                index2,
+                identifier.line_number
+            )
+
+        return BinaryOpNode(identifier, 'INDEX', index1, identifier.line_number)
 
     def parse_nightmare_loop(self):
         self.validate_and_consume_token('NIGHTMARE')
@@ -318,7 +390,12 @@ class Parser:
             return self.parse_boolean()
 
         elif self.current_token.type == 'IDENTIFIER':
-            return self.parse_identifier_expression()
+            identifier = self.parse_identifier()
+            if self.current_token.type == 'LBRACKET':
+                return self.parse_matrix_or_array_access(identifier)
+            elif self.current_token.type == 'LPAREN':
+                return self.parse_function_call(identifier)
+            return identifier
 
         elif self.current_token.type == 'LPAREN':
             self.consume_token()
@@ -328,6 +405,7 @@ class Parser:
 
         else:
             raise SyntaxError(f"Token inesperado {self.current_token.type} en la línea {self.current_token.line_number} --> {self.current_token.value}")
+
 
     def parse_number(self):
         value = self.current_token.value

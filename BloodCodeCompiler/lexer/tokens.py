@@ -47,9 +47,9 @@ tokens = [
     ('MINUS', r'-'),
     ('MULTIPLY', r'\*'),
     ('DIVIDE', r'/'),
+    ('DOT', r'\.'),
 
     # Comentarios y espacios en blanco
-    ('COMMENT', r'//.*'),
     ('WHITESPACE', r'\s+'),
 
     # Literales y tipos de datos

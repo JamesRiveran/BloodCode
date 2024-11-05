@@ -74,15 +74,23 @@ class SemanticAnalyzer:
 
     def analyze_declaration(self, node):
         var_type = node.var_type
-        if isinstance(var_type, tuple): 
+        if isinstance(var_type, tuple):
             element_type = var_type[0].upper()
-            size_expr = var_type[1]
 
-            if size_expr:
-                size_type = self.analyze(size_expr)
-                if size_type != 'MARIA':
-                    raise SemanticError(f"El tamaño del array '{node.identifier_list[0].name}' debe ser de tipo 'MARIA'.")
-            array_type = (element_type, 'ARRAY')
+            if len(var_type) == 3:
+                size1 = var_type[1]
+                size2 = var_type[2]
+                if size1:
+                    self._validate_array_size(size1, node.identifier_list[0], node)
+                if size2:
+                    self._validate_array_size(size2, node.identifier_list[0], node)
+                array_type = (element_type, 'MATRIX')
+            
+            elif len(var_type) == 2:
+                size_expr = var_type[1]
+                if size_expr:
+                    self._validate_array_size(size_expr, node.identifier_list[0], node)
+                array_type = (element_type, 'ARRAY')
         else:
             array_type = var_type.upper()
 
@@ -91,11 +99,29 @@ class SemanticAnalyzer:
 
         if node.expression:
             expr_type = self.analyze(node.expression)
-            if isinstance(var_type, tuple): 
-                self._validate_array_declaration(var_type, expr_type, identifier, node)
+            if isinstance(var_type, tuple):
+                if len(var_type) == 3:
+                    self._validate_matrix_declaration(var_type, expr_type, identifier, node)
+                else:
+                    self._validate_array_declaration(var_type, expr_type, identifier, node)
             else:
                 self._validate_type_match(array_type, expr_type.upper(), identifier, node)
 
+    def _validate_matrix_declaration(self, var_type, expr_type, identifier, node):
+        element_type = var_type[0].upper()
+
+        if expr_type != 'MATRIX':
+            raise SemanticError(f"Se esperaba una matriz para la variable '{identifier.name}', pero se encontró {expr_type}", node)
+
+        if isinstance(node.expression, ArrayNode):
+            for row in node.expression.elements:
+                if not isinstance(row, ArrayNode):
+                    raise SemanticError(f"Se esperaba una matriz 2D para '{identifier.name}'", node)
+                for element in row.elements:
+                    element_type_from_expr = self.analyze(element).upper()
+                    if element_type_from_expr != element_type:
+                        raise SemanticError(f"Todos los elementos de la matriz '{identifier.name}' deben ser de tipo '{element_type}', pero se encontró {element_type_from_expr}", node)
+        return 'MATRIX'
 
     def _validate_array_size(self, size, identifier, node):
         size_type = self.analyze(size)
@@ -124,46 +150,63 @@ class SemanticAnalyzer:
 
     @semantic_error_handler
     def analyze_binary_op(self, node):
+        if node.operator == 'INDEX':
+            return self._analyze_index_op(node)
+
         left_type = self.analyze(node.left)
         right_type = self.analyze(node.right)
-
-        if node.operator == 'INDEX':
-            if not isinstance(left_type, tuple) or left_type[1] != 'ARRAY':
-                raise SemanticError(f"{node.left.name} no es un array")
-            if right_type != 'MARIA':
-                raise SemanticError(f"El índice debe ser de tipo 'MARIA', pero se encontró '{right_type}'")
-            return left_type[0]
 
         if node.operator == 'ASSIGN':
             if isinstance(node.left, IdentifierNode):
                 if left_type != right_type:
-                    raise SemanticError(f"No se puede asignar un valor de tipo '{right_type}' a una variable de tipo '{left_type}'", node)
-                return left_type  
-            
+                    raise SemanticError(f"No se puede asignar un valor de tipo '{right_type}' a '{left_type}'", node)
+                return left_type
+
             elif isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':
-                array_type = self.analyze(node.left.left)
-                
-                if not isinstance(array_type, tuple) or array_type[1] != 'ARRAY':
-                    raise SemanticError(f"Acceso inválido: {node.left.left.name} no es un array", node)
-                
+                base_identifier_name = self._get_base_identifier_name(node.left)
+                array_type = self.env.get_variable_type(base_identifier_name)
+
+                if not isinstance(array_type, tuple) or array_type[1] not in ['ARRAY', 'MATRIX']:
+                    raise SemanticError(f"Acceso inválido: '{base_identifier_name}' no es un array o matriz", node)
+
                 element_type = array_type[0]
                 if element_type != right_type:
-                    raise SemanticError(f"No se puede asignar valor de tipo '{right_type}' a un elemento de tipo '{element_type}' en el array", node)
-                
-                index_type = self.analyze(node.left.right)
-                if index_type != 'MARIA':
-                    raise SemanticError(f"El índice del array debe ser de tipo 'MARIA', pero se encontró '{index_type}'", node)
-                
-                return element_type 
+                    raise SemanticError(f"No se puede asignar '{right_type}' a un '{element_type}' en el array o matriz", node)
 
-        if node.operator in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
+                return element_type
+
+        elif node.operator in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
             return self._analyze_arithmetic_op(left_type, right_type, node)
-        if node.operator in ['EQUAL', 'NOT', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL']:
+
+        elif node.operator in ['EQUAL', 'NOT', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL']:
             return self._analyze_comparison_op(left_type, right_type, node)
-        if node.operator in ['BLOODBOND', 'OLDBLOOD', 'VILEBLOOD']:
+
+        elif node.operator in ['BLOODBOND', 'OLDBLOOD', 'VILEBLOOD']:
             return self._analyze_logical_op(left_type, right_type, node)
 
         raise SemanticError(f"Operador no soportado: {node.operator}", node)
+
+    def _analyze_index_op(self, node):
+        base_identifier_name = self._get_base_identifier_name(node.left)
+        array_type = self.env.get_variable_type(base_identifier_name)
+
+        if not isinstance(array_type, tuple):
+            raise SemanticError(f"{base_identifier_name} no es un array o matriz", node)
+
+        index_type = self.analyze(node.right)
+        if index_type != 'MARIA':
+            raise SemanticError(f"Índice debe ser de tipo 'MARIA', pero se encontró '{index_type}'", node)
+
+        return array_type[0]
+
+    def _get_base_identifier_name(self, node):
+        current_node = node
+        while isinstance(current_node, BinaryOpNode) and current_node.operator == 'INDEX':
+            current_node = current_node.left
+        if isinstance(current_node, IdentifierNode):
+            return current_node.name
+        else:
+            raise SemanticError("Estructura de acceso inválida: falta identificador base en matriz o array.", node)
 
     def _analyze_arithmetic_op(self, left_type, right_type, node):
         if left_type.upper() != 'MARIA' or right_type.upper() != 'MARIA':
@@ -179,36 +222,25 @@ class SemanticAnalyzer:
     def _analyze_assignment_op(self, node, left_type, right_type):
         if isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':
             array_type = self.analyze(node.left.left)
-            
-            if not isinstance(array_type, tuple):  
-                raise SemanticError(f"Acceso inválido: {node.left.left.name} no es un array", node)
 
-            element_type = array_type[0].upper()  
-            if element_type != right_type.upper():
-                raise SemanticError(f"No se puede asignar valor de tipo '{right_type}' a un array de tipo '{element_type}'", node)
+            if not isinstance(array_type, tuple) or array_type[1] not in ['ARRAY', 'MATRIX']:
+                raise SemanticError(f"Acceso inválido: {node.left.left.name} no es un array o matriz", node)
+
+            element_type = array_type[0]
+            if element_type != right_type:
+                raise SemanticError(f"No se puede asignar '{right_type}' a un '{element_type}' en el array o matriz", node)
 
             index_type = self.analyze(node.left.right)
             if index_type != 'MARIA':
-                raise SemanticError(f"El índice del array debe ser de tipo 'MARIA', pero se encontró '{index_type}'", node)
+                raise SemanticError(f"Índice del array/matriz debe ser 'MARIA', no '{index_type}'", node)
 
-            return element_type  
+            if isinstance(node.left.left, BinaryOpNode) and node.left.left.operator == 'INDEX':
+                col_index_type = self.analyze(node.left.left.right)
+                if col_index_type != 'MARIA':
+                    raise SemanticError(f"Índice de columna debe ser 'MARIA', no '{col_index_type}'", node)
 
-        if left_type != right_type:
-            raise SemanticError(f"No se puede asignar un valor de tipo '{right_type}' a '{left_type}'", node)
+            return element_type
 
-        return left_type
-
-
-    def _analyze_index_op(self, node, left_type, right_type):
-        array_type = self.analyze(node.left)
-        if not isinstance(array_type, tuple):
-            raise SemanticError(f"{node.left.name} no es un array", node)
-
-        index_type = self.analyze(node.right)
-        if index_type != 'MARIA':
-            raise SemanticError(f"El índice debe ser de tipo 'MARIA', pero se encontró '{index_type}'", node)
-
-        return array_type[0]
 
     def _analyze_comparison_op(self, left_type, right_type, node):
         if left_type != right_type:

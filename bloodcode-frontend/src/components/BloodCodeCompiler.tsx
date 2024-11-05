@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { CodeEditor } from "./CodeEditor";
 import { OutputDisplay } from "./OutputDisplay";
 import { ActionButtons } from "./ActionButtons";
@@ -10,7 +10,6 @@ export default function BloodCodeCompiler() {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState<string[]>([]); 
   const [isError, setIsError] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<CodeOptions | "">("");
   const [isPromptActive, setIsPromptActive] = useState(false);  
   const [userInput, setUserInput] = useState("");  
 
@@ -18,11 +17,9 @@ export default function BloodCodeCompiler() {
     setOutput([]);
   };
 
-  useEffect(() => {
-    if (selectedOption) {
-      generateCode(selectedOption);
-    }
-  }, [selectedOption]);
+  const handleOptionChange = (option: CodeOptions) => {
+    generateCode(option);
+  };
 
   const generateCode = (option: CodeOptions) => {
     const generatedCode = codeTemplates[option];
@@ -116,7 +113,7 @@ export default function BloodCodeCompiler() {
       <header className="bg-color-gray-800 p-4 flex flex-col sm:flex-row justify-between items-center w-full">
         <h1 className="text-xl font-bold text-white">Compilador BloodCode</h1>
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          <CodeOptionsComponent selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
+          <CodeOptionsComponent handleOptionChange={handleOptionChange} />
           <ActionButtons compile={compile} execute={execute} />
         </div>
       </header>
@@ -139,4 +136,3 @@ export default function BloodCodeCompiler() {
     </div>
   );
 }
-
