@@ -23,10 +23,12 @@ export const CodeOptionsComponent: React.FC<CodeOptionsProps> = ({ handleOptionC
           <SelectItem className="hover:bg-primary" value="controlSyntax">Sintaxis - Control</SelectItem>
           <SelectItem className="hover:bg-primary" value="functionSyntax">Sintaxis - Funciones</SelectItem>
           <SelectItem className="hover:bg-primary" value="operationSyntax">Sintaxis - Operaciones</SelectItem>
+          <SelectItem className="hover:bg-primary" value="whileSyntax">Ciclos - While</SelectItem>
+          <SelectItem className="hover:bg-primary" value="forSyntax">Ciclos - For</SelectItem>
           <SelectItem className="hover:bg-primary" value="semantics">Semántica</SelectItem>
           <SelectItem className="hover:bg-primary" value="dataTypes">Tipos de datos</SelectItem>
-          <SelectItem className="hover:bg-primary" value="vectors">Vectores</SelectItem>
-          <SelectItem className="hover:bg-primary" value="arrays">Matrices</SelectItem>
+          <SelectItem className="hover:bg-primary" value="vectorsSyntax">Vectores</SelectItem>
+          <SelectItem className="hover:bg-primary" value="arraysSyntax">Matrices</SelectItem>
           <SelectItem className="hover:bg-primary" value="dataEntry">Entrada de datos</SelectItem>
         </SelectContent>
       </Select>

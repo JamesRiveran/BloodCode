@@ -314,14 +314,16 @@ class Interpreter:
             self.execute(node.false_block)
 
     def execute_loop(self, node):
-        if node.init:
-            self.execute(node.init)
+        if isinstance(node.init, DeclarationNode):
+            self.execute_declaration(node.init)
+        elif node.init:
+            self.execute(node.init) 
 
         while self.execute(node.condition):
-            self.execute(node.block)
+            self.execute(node.block) 
+
             if node.increment:
-                self.execute(node.increment)
-        return None
+                self.execute(node.increment) 
 
     def execute_function_declaration(self, node):
             self.functions[node.name.name] = node 

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
-export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectors' | 'dataEntry' | 'arrays';
+export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectorsSyntax' | 'dataEntry' | 'arraysSyntax' | 'whileSyntax' | 'forSyntax';
 
 interface CodeGeneratorProps {
   option: CodeOptions;
@@ -74,7 +74,7 @@ Insight (booleano) {
   Pray("El valor booleano es verdadero.");
 }
 `,
-  vectors: 
+  vectorsSyntax: 
 `Hunter abc: Maria[5];
 abc[0] => 10;
 abc[1] => 20;
@@ -106,7 +106,7 @@ Eyes(nombre);
 Pray("El nombre del usuario es: ");
 Pray(nombre);
 `,
-  arrays: 
+  arraysSyntax: 
 `Hunter matriz: Maria[3].[3];
 matriz[0].[0] => 10;
 matriz[0].[1] => 20;
@@ -131,6 +131,42 @@ Hunter total_suma: Maria => matriz[0].[0] + matriz[1].[1];
 Pray("Suma de elementos específicos:");
 Pray(total_suma);
 `,
+  whileSyntax: 
+`Hunter b: Maria => 0;
+
+Dream (b < 10) {
+  Pray("Valor de b:");
+  Pray(b);
+  
+  Insight (b == 5) {
+    Pray("Se alcanzó el valor 5, terminando el ciclo.");
+  }
+  
+  b => b + 1;
+}
+Pray("Ciclo terminado.");
+`,
+forSyntax:
+`Hunter a,b: Maria => 0;
+
+Nightmare (a => 0; a<10; a=>a+1;) {
+  Pray("Valor de b:");
+  Pray(b);
+  
+  Insight (b == 5) {
+    Pray("Se alcanzó el valor 5, terminando el ciclo.");
+  }
+  
+  b => b + 1;
+}
+Pray("Ciclo terminado.");
+
+Pray("Nuevo ciclo:");
+Nightmare(Hunter i: Maria => 0; i<5; i=>i+1;){
+Pray(i);
+Pray("Fin del ciclo.");
+}
+`
 };
 
 export const CodeGenerator: React.FC<CodeGeneratorProps> = ({ option, onGenerate }) => {

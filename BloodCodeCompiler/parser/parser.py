@@ -301,20 +301,20 @@ class Parser:
     def parse_nightmare_loop(self):
         self.validate_and_consume_token('NIGHTMARE')
         self.validate_and_consume_token('LPAREN')
+        
         if self.current_token.type == 'HUNTER':
-            init = self.parse_declaration()  
+            init = self.parse_declaration() 
         else:
             init = self.parse_assignment_or_expression()  
 
         condition = self.parse_expression()
         self.validate_and_consume_token('SEMICOLON')
-
         increment = self.parse_assignment_or_expression()
         self.validate_and_consume_token('RPAREN')
 
         block = self.parse_block()
-
         return LoopNode(init, condition, increment, block, self.current_token.line_number)
+
 
     def parse_pray(self):
         self.validate_and_consume_token('PRAY')

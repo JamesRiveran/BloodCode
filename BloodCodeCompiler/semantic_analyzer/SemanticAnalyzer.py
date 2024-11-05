@@ -314,10 +314,19 @@ class SemanticAnalyzer:
 
     @semantic_error_handler
     def analyze_loop(self, node):
+        if isinstance(node.init, DeclarationNode):
+            self.analyze_declaration(node.init)
+        elif node.init:
+            self.analyze(node.init)
+
         condition_type = self.analyze(node.condition)
         if condition_type != 'BLOOD':
-            raise Exception(f"Error de tipo: La condición en un bucle debe ser de tipo 'BLOOD'")
+            raise SemanticError("La condición del bucle debe ser de tipo 'BLOOD'", node.condition)
+
         self.analyze(node.block)
+
+        if node.increment:
+            self.analyze(node.increment)
 
     @semantic_error_handler
     def analyze_function_declaration(self, node):
