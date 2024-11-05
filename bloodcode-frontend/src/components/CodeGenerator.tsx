@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 
-export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectorsSyntax' | 'dataEntry' | 'arraysSyntax' | 'whileSyntax' | 'forSyntax';
+export type CodeOptions = 'reservedWords' | 'controlSyntax' | 'functionSyntax' | 'operationSyntax' | 'semantics' | 'dataTypes' | 'vectorsSyntax' | 'dataEntry' | 'arraysSyntax' | 'whileSyntax' | 'forSyntax' | 'logicSyntax';
 
 interface CodeGeneratorProps {
   option: CodeOptions;
@@ -170,6 +170,23 @@ Nightmare(Hunter i: Maria => 0; i<5; i=>i+1;){
 Pray(i);
 Pray("Fin del ciclo.");
 }
+`,
+logicSyntax:
+`Hunter a: Blood => true;
+Hunter b: Blood => false;
+
+Pray(a Bloodbond a);
+Pray(a Bloodbond b);
+Pray(b Bloodbond a);
+Pray(b Bloodbond b);
+
+Pray(a OldBlood a);
+Pray(a OldBlood b);
+Pray(b OldBlood b);
+Pray(b OldBlood a);
+
+Pray(Vileblood a);
+Pray(Vileblood b);
 `
 };
 

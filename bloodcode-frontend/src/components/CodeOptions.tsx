@@ -29,6 +29,7 @@ export const CodeOptionsComponent: React.FC<CodeOptionsProps> = ({ handleOptionC
           <SelectItem className="hover:bg-primary" value="dataTypes">Tipos de datos</SelectItem>
           <SelectItem className="hover:bg-primary" value="vectorsSyntax">Vectores</SelectItem>
           <SelectItem className="hover:bg-primary" value="arraysSyntax">Matrices</SelectItem>
+          <SelectItem className="hover:bg-primary" value="logicSyntax">Operadores Lógicos</SelectItem>
           <SelectItem className="hover:bg-primary" value="dataEntry">Entrada de datos</SelectItem>
         </SelectContent>
       </Select>

@@ -44,6 +44,7 @@ class SemanticAnalyzer:
             FunctionDeclarationNode: self.analyze_function_declaration,
             ReturnNode: self.analyze_return,
             BooleanNode: self.analyze_boolean,
+            UnaryOpNode: self.analyze_unary_op,
         }
         
         analyze_method = node_type_to_method.get(type(node))
@@ -279,12 +280,13 @@ class SemanticAnalyzer:
         arg_type = self.analyze(node.arguments[0]).upper()
 
         if node.identifier == 'PRAY':
-            if arg_type not in ['MARIA', 'EILEEN', 'GEHRMAN']:
-                raise SemanticError(f"La función 'PRAY' solo puede imprimir valores de tipo 'MARIA', 'EILEEN' o 'GEHRMAN', pero se encontró '{arg_type}'", node)
+            if arg_type not in ['MARIA', 'EILEEN', 'GEHRMAN', 'BLOOD']:
+                raise SemanticError(f"La función 'PRAY' solo puede imprimir valores de tipo 'MARIA', 'EILEEN', 'GEHRMAN', o 'BLOOD', pero se encontró '{arg_type}'", node)
         elif node.identifier == 'EYES':
             if arg_type not in ['MARIA', 'EILEEN']:
                 raise SemanticError(f"La función 'EYES' solo puede leer valores de tipo 'MARIA' o 'EILEEN', pero se encontró '{arg_type}'", node)
         return None
+
     
     def _analyze_user_defined_function_call(self, node):
         func_type = self.env.get_function_type(node.identifier.name)
@@ -328,6 +330,17 @@ class SemanticAnalyzer:
 
         if node.increment:
             self.analyze(node.increment)
+
+    @semantic_error_handler
+    def analyze_unary_op(self, node):
+        operand_type = self.analyze(node.operand)
+        
+        if node.operator == 'VILEBLOOD':
+            if operand_type != 'BLOOD':
+                raise SemanticError(f"El operador 'VILEBLOOD' solo se puede aplicar a valores de tipo 'BLOOD', pero se encontró '{operand_type}'", node)
+            return 'BLOOD'
+        else:
+            raise SemanticError(f"Operador unario no soportado: {node.operator}", node)
 
     @semantic_error_handler
     def analyze_function_declaration(self, node):
