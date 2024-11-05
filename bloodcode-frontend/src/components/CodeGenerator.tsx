@@ -33,6 +33,11 @@ Insight (x > y) {
 `GreatOnes suma(a: Maria, b: Maria): Maria {
   Echoes (a + b);
 }
+
+GreatOnes hello(): Rom {
+Pray("Hello");
+}
+
 Hunter resultado: Maria;
 resultado => suma(10, 10);
 Pray(resultado);
@@ -103,8 +108,7 @@ Pray(suma);
   dataEntry: 
 `Hunter nombre: Eileen;
 Eyes(nombre);
-Pray("El nombre del usuario es: ");
-Pray(nombre);
+Pray("El nombre del usuario es: " + nombre);
 `,
   arraysSyntax: 
 `Hunter matriz: Maria[3].[3];

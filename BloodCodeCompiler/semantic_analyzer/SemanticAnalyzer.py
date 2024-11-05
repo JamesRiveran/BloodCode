@@ -209,15 +209,16 @@ class SemanticAnalyzer:
             raise SemanticError("Estructura de acceso inválida: falta identificador base en matriz o array.", node)
 
     def _analyze_arithmetic_op(self, left_type, right_type, node):
-        if left_type.upper() != 'MARIA' or right_type.upper() != 'MARIA':
+        if left_type == 'MARIA' and right_type == 'MARIA':
+            return 'MARIA'
+        elif left_type == 'EILEEN' and right_type == 'EILEEN':
+            return 'EILEEN'
+        else:
             raise SemanticError(
-                f"Operación aritmética requiere ambos operandos de tipo 'MARIA', "
+                f"Operación aritmética requiere ambos operandos de tipo 'MARIA' o ambos de tipo 'EILEEN', "
                 f"pero se encontró '{left_type}' y '{right_type}'",
                 node
             )
-        return 'MARIA'
-
-
 
     def _analyze_assignment_op(self, node, left_type, right_type):
         if isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':

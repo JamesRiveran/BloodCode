@@ -66,7 +66,8 @@ class Interpreter:
             function_name = node.identifier
 
         if function_name == 'PRAY':
-            full_message = "".join(str(self.execute(expr)) for expr in node.arguments)
+            evaluated_args = [self.execute(expr) for expr in node.arguments]
+            full_message = "".join(str(arg) for arg in evaluated_args)
             self.output.append(full_message)
             return None
 
@@ -74,7 +75,7 @@ class Interpreter:
             for var in node.arguments:
                 var_name = var.name if isinstance(var, IdentifierNode) else var
                 var_type = self.env.get_variable_type(var_name)
-                
+
                 if 'input_var' in self.context: 
                     value = self.context['input_var']
                     if isinstance(var_type, tuple): 
