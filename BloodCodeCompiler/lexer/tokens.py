@@ -1,9 +1,9 @@
 tokens = [
-    ('HUNTERSDREAM', r'HuntersDream '),
+    # Palabras reservadas y palabras clave
+    ('HUNTERSDREAM', r'HuntersDream'),
     ('NIGHTMARE', r'Nightmare'),
     ('DREAM', r'Dream'),
     ('HUNTER', r'Hunter'),
-    ('HUNTERS', r'Hunters'),
     ('GREATONES', r'GreatOnes'),
     ('DJURA', r'Djura'),
     ('EILEEN', r'Eileen'),
@@ -22,10 +22,11 @@ tokens = [
     ('MADNESS', r'Madness'),
     ('EYES', r'Eyes'),
     ('PRAY', r'Pray'),
-    ('VILEBLOOD', r'Vileblood'),
-    ('BLOODBOND', r'Bloodbond'),
-    ('OLDBLOOD', r'OldBlood'),
     ('ECHOES', r'Echoes'),
+    ('LIGHT', r'Light'),
+    ('DARKNESS', r'Darkness'),
+
+    # Operadores y símbolos
     ('GREATER', r'>'),
     ('LESS', r'<'),
     ('GREATEREQUAL', r'>='),
@@ -46,13 +47,16 @@ tokens = [
     ('MINUS', r'-'),
     ('MULTIPLY', r'\*'),
     ('DIVIDE', r'/'),
+    ('DOT', r'\.'),
+    ('ARROW_ASSIGN', r'=>'),
 
-    ('LIGHT', r'Light'),
-    ('DARKNESS', r'Darkness'),
-    ('COMMENT', r'//.*'),
+    # Comentarios y espacios en blanco
     ('WHITESPACE', r'\s+'),
 
+    # Literales y tipos de datos
     ('NUMBER', r'\d+(\.\d+)?'),
     ('STRING', r'"[^"]*"'),
+
+    # Identificadores 
     ('IDENTIFIER', r'[a-zA-Z_]\w*'),
 ]
