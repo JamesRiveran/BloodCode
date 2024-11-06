@@ -48,6 +48,7 @@ tokens = [
     ('MULTIPLY', r'\*'),
     ('DIVIDE', r'/'),
     ('DOT', r'\.'),
+    ('ARROW_ASSIGN', r'=>'),
 
     # Comentarios y espacios en blanco
     ('WHITESPACE', r'\s+'),

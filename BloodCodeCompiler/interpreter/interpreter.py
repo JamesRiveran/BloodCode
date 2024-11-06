@@ -60,10 +60,7 @@ class Interpreter:
         return value
 
     def execute_function_call(self, node):
-        if isinstance(node.identifier, IdentifierNode):
-            function_name = node.identifier.name
-        else:
-            function_name = node.identifier
+        function_name = node.identifier.name if isinstance(node.identifier, IdentifierNode) else node.identifier
 
         if function_name == 'PRAY':
             evaluated_args = [self.execute(expr) for expr in node.arguments]
@@ -102,13 +99,19 @@ class Interpreter:
                     self.pending_input_var = var_name
                     return None
 
-        if function_name in self.functions:
-            func = self.functions[function_name]
-            local_context = self.context.copy()
-            for param, arg in zip(func.parameters, node.arguments):
-                local_context[param[0].name] = self.execute(arg)
-            result = self.execute_block_with_context(func.block, local_context)
-            return result
+        func = self.functions.get(function_name)
+        if func is None:
+            raise Exception(f"Función no encontrada: {function_name}")
+
+        local_context = self.context.copy()
+
+        for param, arg in zip(func.parameters, node.arguments or []):
+            local_context[param[0].name] = self.execute(arg)
+
+        result = self.execute_block_with_context(func.block, local_context)
+        return result
+
+
 
     def _convert_input_value(self, var_type, value, var_name):
         try:
@@ -135,16 +138,16 @@ class Interpreter:
     def execute_block_with_context(self, block, context):
         previous_context = self.context
         self.context = context
+        result = None
 
-        try:
-            result = None
-            for statement in block.statements:
-                result = self.execute(statement)
-                if isinstance(statement, ReturnNode):
-                    return result
-        finally:
-            self.context = previous_context
+        for statement in block.statements:
+            result = self.execute(statement)
+            if isinstance(statement, ReturnNode):
+                break 
+
+        self.context = previous_context
         return result
+
 
     def execute_return(self, node):
         return self.execute(node.expression)
@@ -207,7 +210,7 @@ class Interpreter:
             raise Exception("Acceso de matriz inválido: falta el identificador base.")
 
     def execute_binary_op(self, node):
-        if node.operator == 'ASSIGN':
+        if node.operator in ['ASSIGN', 'ARROW_ASSIGN']:
             right_value = self.execute(node.right)
 
             if isinstance(node.left, IdentifierNode):
@@ -220,7 +223,7 @@ class Interpreter:
                 if array is None:
                     raise Exception(f"Variable no definida: {base_name}")
 
-                if isinstance(array[0], list):  
+                if isinstance(array[0], list):
                     row_index = self.execute(node.left.left.right)
                     col_index = self.execute(node.left.right)
                     if not (0 <= row_index < len(array)) or not (0 <= col_index < len(array[0])):
@@ -327,5 +330,4 @@ class Interpreter:
                 self.execute(node.increment) 
 
     def execute_function_declaration(self, node):
-            self.functions[node.name.name] = node 
-            return None
+            self.functions[node.name.name] = node

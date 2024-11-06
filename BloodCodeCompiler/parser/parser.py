@@ -175,30 +175,37 @@ class Parser:
         block = self.parse_block()  
         return LoopNode(None, condition, None, block, self.current_token.line_number)
 
-    @error_handler
     def parse_assignment_or_expression(self):
         identifier = self.parse_identifier()
 
-        if self.current_token.type == 'LBRACKET':
+        if self.current_token.type == 'LPAREN':
+            func_call_node = self.parse_function_call(identifier)
+            self.validate_and_consume_token('SEMICOLON') 
+            return func_call_node
+
+        elif self.current_token.type == 'LBRACKET':
             access_node = self.parse_matrix_or_array_access(identifier)
             
-            if self.current_token.type == 'ASSIGN':
-                self.consume_token()  
+            if self.current_token.type in {'ASSIGN', 'ARROW_ASSIGN'}:
+                self.consume_token()
                 expression = self.parse_expression()
-                self.validate_and_consume_token('SEMICOLON')
+                self.validate_and_consume_token('SEMICOLON')  
                 return BinaryOpNode(access_node, 'ASSIGN', expression, identifier.line_number)
             
             return access_node
 
-        elif self.current_token.type == 'ASSIGN':
+        elif self.current_token.type in {'ASSIGN', 'ARROW_ASSIGN'}:
             self.consume_token()
             expression = self.parse_expression()
             self.validate_and_consume_token('SEMICOLON')
             return BinaryOpNode(identifier, 'ASSIGN', expression, identifier.line_number)
         
         else:
+            self.validate_and_consume_token('SEMICOLON')
             return identifier
-        
+
+
+
     @error_handler
     def parse_array_assignment_or_access(self, identifier):
         self.consume_token()  
@@ -213,16 +220,17 @@ class Parser:
         
         return BinaryOpNode(identifier, 'INDEX', index, self.current_token.line_number)
 
-    @error_handler
     def parse_function_call(self, identifier):
         self.consume_token()  
         arguments = []
-        if self.current_token.type != 'RPAREN':  
+
+        if self.current_token.type != 'RPAREN':
             arguments = self.parse_argument_list()  
-        self.validate_and_consume_token('RPAREN')
-        self.validate_and_consume_token('SEMICOLON')
         
+        self.validate_and_consume_token('RPAREN') 
         return FunctionCallNode(identifier, arguments, self.current_token.line_number)
+
+
 
     @error_handler
     def parse_assignment(self, identifier):
@@ -438,15 +446,6 @@ class Parser:
         index = self.parse_expression()
         self.validate_and_consume_token('RBRACKET')
         return BinaryOpNode(identifier, 'INDEX', index, self.current_token.line_number)
-
-    def parse_function_call(self, identifier):
-        self.consume_token()
-        arguments = []
-        if self.current_token.type != 'RPAREN':
-            arguments = self.parse_argument_list()
-        self.validate_and_consume_token('RPAREN')
-        return FunctionCallNode(identifier, arguments, self.current_token.line_number)
-
 
     def parse_argument_list(self):
         arguments = [self.parse_expression()] 

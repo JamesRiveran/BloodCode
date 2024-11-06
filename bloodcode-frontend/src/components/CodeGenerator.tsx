@@ -30,15 +30,16 @@ Insight (x > y) {
 }`,
   functionSyntax: 
 `GreatOnes suma(a: Maria, b: Maria): Maria {
-  Echoes (a + b);
+    Echoes (a + b);
 }
 
 GreatOnes hello(): Rom {
-Pray("Hello");
+    Pray("Hello, hunter");
 }
 
 Hunter resultado: Maria;
 resultado => suma(10, 10);
+hello();
 Pray(resultado);
 `,
   operationSyntax: 

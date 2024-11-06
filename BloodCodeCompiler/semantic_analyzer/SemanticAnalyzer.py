@@ -146,7 +146,7 @@ class SemanticAnalyzer:
         return 'ARRAY'
 
     def _validate_type_match(self, var_type, expr_type, identifier, node):
-        if expr_type != var_type:
+        if self.normalize_type(expr_type) != self.normalize_type(var_type):
             raise SemanticError(f"Error de tipo: Se esperaba '{var_type}' para la variable '{identifier.name}', pero se encontró '{expr_type}'", node)
 
     @semantic_error_handler
@@ -157,8 +157,10 @@ class SemanticAnalyzer:
         left_type = self.analyze(node.left)
         right_type = self.analyze(node.right)
 
-        if node.operator == 'ASSIGN':
+        if node.operator in ['ASSIGN', 'ARROW_ASSIGN']:
             if isinstance(node.left, IdentifierNode):
+                left_type = self.analyze(node.left)
+                right_type = self.analyze(node.right)
                 if left_type != right_type:
                     raise SemanticError(f"No se puede asignar un valor de tipo '{right_type}' a '{left_type}'", node)
                 return left_type
@@ -210,6 +212,8 @@ class SemanticAnalyzer:
             raise SemanticError("Estructura de acceso inválida: falta identificador base en matriz o array.", node)
 
     def _analyze_arithmetic_op(self, left_type, right_type, node):
+        left_type = self.normalize_type(left_type)
+        right_type = self.normalize_type(right_type)
         if left_type == 'MARIA' and right_type == 'MARIA':
             return 'MARIA'
         elif left_type == 'EILEEN' and right_type == 'EILEEN':
@@ -245,14 +249,20 @@ class SemanticAnalyzer:
 
 
     def _analyze_comparison_op(self, left_type, right_type, node):
+        left_type = self.normalize_type(left_type)
+        right_type = self.normalize_type(right_type)
         if left_type != right_type:
             raise SemanticError(f"Los operandos de una comparación deben ser del mismo tipo, pero se encontró '{left_type}' y '{right_type}'", node)
-        return 'BLOOD'  
+        return 'BLOOD'
+ 
 
     def _analyze_logical_op(self, left_type, right_type, node):
+        left_type = self.normalize_type(left_type)
+        right_type = self.normalize_type(right_type)
         if left_type != 'BLOOD' or right_type != 'BLOOD':
             raise SemanticError(f"Los operadores lógicos requieren valores booleanos de tipo 'BLOOD', pero se encontró '{left_type}' y '{right_type}'", node)
         return 'BLOOD'
+
 
     @semantic_error_handler
     def analyze_array(self, node):
@@ -264,14 +274,6 @@ class SemanticAnalyzer:
             elif elem_type != element_type:
                 raise SemanticError(f"Error de tipo: Todos los elementos del array deben ser del mismo tipo, pero se encontró {elem_type}")
         return 'ARRAY'  
-
-
-    @semantic_error_handler
-    def analyze_function_call(self, node):
-        if node.identifier in ['PRAY', 'EYES']:
-            return self._analyze_builtin_function_call(node)
-        
-        return self._analyze_user_defined_function_call(node)
 
     def _analyze_builtin_function_call(self, node):
         if len(node.arguments) != 1:
@@ -288,14 +290,24 @@ class SemanticAnalyzer:
         return None
 
     
+    @semantic_error_handler
+    def analyze_function_call(self, node):
+        if node.identifier in ['PRAY', 'EYES']:
+            return self._analyze_builtin_function_call(node)
+        
+        return self._analyze_user_defined_function_call(node)
+
     def _analyze_user_defined_function_call(self, node):
         func_type = self.env.get_function_type(node.identifier.name)
         param_types, return_type = func_type
 
-        if len(node.arguments) != len(param_types):
-            raise SemanticError(f"La función '{node.identifier.name}' espera {len(param_types)} argumentos, pero se encontraron {len(node.arguments)}", node)
+        if len(node.arguments or []) != len(param_types):
+            raise SemanticError(
+                f"La función '{node.identifier.name}' espera {len(param_types)} argumentos, pero se encontraron {len(node.arguments or [])}",
+                node
+            )
 
-        for i, arg in enumerate(node.arguments):
+        for i, arg in enumerate(node.arguments or []):
             arg_type = self.analyze(arg).upper()  
             expected_type = param_types[i].upper()  
             if arg_type != expected_type:
@@ -303,8 +315,9 @@ class SemanticAnalyzer:
 
         return return_type.upper()
 
-    def normalize_type(type_str):
-        return type_str.upper()
+
+    def normalize_type(self, type_str):
+        return type_str.upper() 
 
     @semantic_error_handler
     def analyze_if_statement(self, node):
