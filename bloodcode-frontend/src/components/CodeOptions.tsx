@@ -42,6 +42,9 @@ export const CodeOptionsComponent: React.FC<CodeOptionsProps> = ({
               <DropdownMenuItem onClick={() => handleOptionClick("forSyntax")} className="hover:bg-secondary focus:bg-secondary">
                 Ciclo For
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("nestedLoops")} className="hover:bg-secondary focus:bg-secondary">
+                Bucles Anidados
+              </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
 
@@ -59,19 +62,11 @@ export const CodeOptionsComponent: React.FC<CodeOptionsProps> = ({
               <DropdownMenuItem onClick={() => handleOptionClick("operationSyntax")} className="hover:bg-secondary focus:bg-secondary">
                 Operaciones
               </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="flex justify-between items-center w-full text-left px-4 py-2 hover:bg-secondary-dark focus:bg-secondary group">
-              Semántica
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="bg-color-gray-800 text-gray-100 border-gray-700">
-              <DropdownMenuItem onClick={() => handleOptionClick("semantics")} className="hover:bg-secondary focus:bg-secondary">
-                Semántica General
+              <DropdownMenuItem onClick={() => handleOptionClick("conditionalSyntax")} className="hover:bg-secondary focus:bg-secondary">
+                Sintaxis Condicional Avanzada
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleOptionClick("pemdas")} className="hover:bg-secondary focus:bg-secondary">
-                PEMDAS
+              <DropdownMenuItem onClick={() => handleOptionClick("switchCaseEmulation")} className="hover:bg-secondary focus:bg-secondary">
+                Emulación Switch-Case
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
@@ -100,6 +95,54 @@ export const CodeOptionsComponent: React.FC<CodeOptionsProps> = ({
             <DropdownMenuSubContent className="bg-color-gray-800 text-gray-100 border-gray-700">
               <DropdownMenuItem onClick={() => handleOptionClick("dataEntry")} className="hover:bg-secondary focus:bg-secondary">
                 Entrada de Datos
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("stringConcatenation")} className="hover:bg-secondary focus:bg-secondary">
+                Concatenación de Cadenas
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="flex justify-between items-center w-full text-left px-4 py-2 hover:bg-secondary-dark focus:bg-secondary group">
+              Operaciones Avanzadas
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="bg-color-gray-800 text-gray-100 border-gray-700">
+              <DropdownMenuItem onClick={() => handleOptionClick("semantics")} className="hover:bg-secondary focus:bg-secondary">
+                Semántica General
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("complexArithmetic")} className="hover:bg-secondary focus:bg-secondary">
+                Aritmética Compleja
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("booleanExpressions")} className="hover:bg-secondary focus:bg-secondary">
+                Expresiones Booleanas
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("arrayModification")} className="hover:bg-secondary focus:bg-secondary">
+                Modificación de Array
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("recursiveFunction")} className="hover:bg-secondary focus:bg-secondary">
+                Función Recursiva
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="flex justify-between items-center w-full text-left px-4 py-2 hover:bg-secondary-dark focus:bg-secondary group">
+              Algoritmos
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="bg-color-gray-800 text-gray-100 border-gray-700">
+              <DropdownMenuItem onClick={() => handleOptionClick("areaRectangle")} className="hover:bg-secondary focus:bg-secondary">
+                Área del Rectángulo
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("averageThreeNumbers")} className="hover:bg-secondary focus:bg-secondary">
+                Promedio de Tres Números
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("celsiusToFahrenheit")} className="hover:bg-secondary focus:bg-secondary">
+                Celsius a Fahrenheit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("hoursToMinutesAndSeconds")} className="hover:bg-secondary focus:bg-secondary">
+                Horas a Minutos y Segundos
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("ageInDays")} className="hover:bg-secondary focus:bg-secondary">
+                Días Vividos
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
