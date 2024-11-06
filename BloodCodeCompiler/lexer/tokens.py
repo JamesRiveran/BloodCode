@@ -1,0 +1,62 @@
+tokens = [
+    # Palabras reservadas y palabras clave
+    ('HUNTERSDREAM', r'HuntersDream'),
+    ('NIGHTMARE', r'Nightmare'),
+    ('DREAM', r'Dream'),
+    ('HUNTER', r'Hunter'),
+    ('GREATONES', r'GreatOnes'),
+    ('DJURA', r'Djura'),
+    ('EILEEN', r'Eileen'),
+    ('TRUE', r'true'),
+    ('FALSE', r'false'),
+    ('BLOODBOND', r'Bloodbond'),  
+    ('OLDBLOOD', r'OldBlood'),    
+    ('VILEBLOOD', r'Vileblood'),  
+    ('BLOOD', r'Blood'),        
+    ('MARIA', r'Maria'),
+    ('GEHRMAN', r'Gehrman'),
+    ('ROM', r'Rom'),
+    ('DRUNKENNESS', r'Drunkenness'),
+    ('REST', r'Rest'),
+    ('INSIGHT', r'Insight'),
+    ('MADNESS', r'Madness'),
+    ('EYES', r'Eyes'),
+    ('PRAY', r'Pray'),
+    ('ECHOES', r'Echoes'),
+    ('LIGHT', r'Light'),
+    ('DARKNESS', r'Darkness'),
+
+    # Operadores y símbolos
+    ('GREATER', r'>'),
+    ('LESS', r'<'),
+    ('GREATEREQUAL', r'>='),
+    ('LESSEQUAL', r'<='),
+    ('EQUAL', r'=='),
+    ('ASSIGN', r'=>'),
+    ('NOT', r'!='),
+    ('COLON', r':'),
+    ('LPAREN', r'\('),
+    ('RPAREN', r'\)'),
+    ('LBRACE', r'\{'),
+    ('RBRACE', r'\}'),
+    ('COMMA', r','),
+    ('LBRACKET', r'\['),  
+    ('RBRACKET', r'\]'),
+    ('SEMICOLON', r';'),
+    ('PLUS', r'\+'),
+    ('MINUS', r'-'),
+    ('MULTIPLY', r'\*'),
+    ('DIVIDE', r'/'),
+    ('DOT', r'\.'),
+    ('ARROW_ASSIGN', r'=>'),
+
+    # Comentarios y espacios en blanco
+    ('WHITESPACE', r'\s+'),
+
+    # Literales y tipos de datos
+    ('NUMBER', r'\d+(\.\d+)?'),
+    ('STRING', r'"[^"]*"'),
+
+    # Identificadores 
+    ('IDENTIFIER', r'[a-zA-Z_]\w*'),
+]
