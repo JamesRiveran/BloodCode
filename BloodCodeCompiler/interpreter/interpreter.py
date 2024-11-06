@@ -63,8 +63,7 @@ class Interpreter:
         function_name = node.identifier.name if isinstance(node.identifier, IdentifierNode) else node.identifier
 
         if function_name == 'PRAY':
-            evaluated_args = [self.execute(expr) for expr in node.arguments]
-            full_message = "".join(str(arg) for arg in evaluated_args)
+            full_message = "".join(str(self.execute(expr)) for expr in node.arguments)
             self.output.append(full_message)
             return None
 
@@ -73,45 +72,44 @@ class Interpreter:
                 var_name = var.name if isinstance(var, IdentifierNode) else var
                 var_type = self.env.get_variable_type(var_name)
 
-                if 'input_var' in self.context: 
+                if 'input_var' in self.context:
                     value = self.context['input_var']
-                    if isinstance(var_type, tuple): 
+
+                    if isinstance(var_type, tuple):
                         element_type = var_type[0]
-                        if element_type == 'MARIA':
-                            value = [int(v) for v in value.split()] 
-                        elif element_type == 'EILEEN':
-                            value = value.split()
+                        if element_type == 'MARIA':  
+                            value = [int(v) for v in value.split()]  
+                        elif element_type == 'EILEEN':  
+                            value = value.split()  
                         else:
                             raise Exception(f"Tipo no soportado para 'Eyes': {element_type}")
                     else:
                         if var_type == 'MARIA':
-                            value = int(value)
+                            value = int(value)  
                         elif var_type == 'EILEEN':
-                            value = str(value)
+                            value = str(value)  
                         else:
                             raise Exception(f"Tipo no soportado para 'Eyes': {var_type}")
-                    
-                    self.context[var_name] = value 
+
+                    self.context[var_name] = value
                     del self.context['input_var']
-                    self.pending_input_var = None 
+                    self.pending_input_var = None
                 else:
                     self.prompt_var = f"Ingrese valor para la variable {var_name}"
                     self.pending_input_var = var_name
-                    return None
+                    return None  
 
-        func = self.functions.get(function_name)
-        if func is None:
+        elif function_name in self.functions:
+            func = self.functions[function_name]
+
+            local_context = self.context.copy()
+            for param, arg in zip(func.parameters, node.arguments or []):
+                local_context[param[0].name] = self.execute(arg)
+
+            return self.execute_block_with_context(func.block, local_context)
+
+        else:
             raise Exception(f"Función no encontrada: {function_name}")
-
-        local_context = self.context.copy()
-
-        for param, arg in zip(func.parameters, node.arguments or []):
-            local_context[param[0].name] = self.execute(arg)
-
-        result = self.execute_block_with_context(func.block, local_context)
-        return result
-
-
 
     def _convert_input_value(self, var_type, value, var_name):
         try:
@@ -147,7 +145,6 @@ class Interpreter:
 
         self.context = previous_context
         return result
-
 
     def execute_return(self, node):
         return self.execute(node.expression)
