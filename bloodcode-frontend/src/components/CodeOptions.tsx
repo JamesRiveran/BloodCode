@@ -122,6 +122,9 @@ export const CodeOptionsComponent: React.FC<CodeOptionsProps> = ({
               <DropdownMenuItem onClick={() => handleOptionClick("recursiveFunction")} className="hover:bg-secondary focus:bg-secondary">
                 Función Recursiva
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOptionClick("menu")} className="hover:bg-secondary focus:bg-secondary">
+                Menú de Opciones
+              </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuSub>

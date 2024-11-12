@@ -36,7 +36,8 @@ class Interpreter:
                 raise Exception(f"Nodo no soportado: {type(node)}")
 
         except Exception as e:
-            raise Exception(f"Error en la línea {node.line_number}: {str(e)}")
+            line_info = f"en la línea {node.line_number}" if node and hasattr(node, 'line_number') else "en una línea desconocida"
+            raise Exception(f"Error {line_info}: {str(e)}")
 
     def execute_number(self, node):
         if float(node.value).is_integer():
@@ -47,17 +48,15 @@ class Interpreter:
         return node.value
 
     def execute_boolean(self, node):
-        return node.value
+        return True if str(node.value).lower() == 'true' else False
 
     def execute_identifier(self, node):
-        if node.name not in self.context:
-            raise Exception(f"Error: La variable '{node.name}' no ha sido inicializada.")
-        value = self.context[node.name]
-        
-        if value is None:
-            raise Exception(f"Error: La variable '{node.name}' fue declarada pero no ha sido inicializada.")
-        
-        return value
+        if node.name in self.context:
+            return self.context[node.name]
+        elif node.name in self.env.global_context:
+            return self.env.global_context[node.name]
+        else:
+            raise Exception(f"Error en la línea {node.line_number}: La variable '{node.name}' no ha sido declarada en el contexto actual.")
 
     def execute_function_call(self, node):
         function_name = node.identifier.name if isinstance(node.identifier, IdentifierNode) else node.identifier
@@ -101,12 +100,15 @@ class Interpreter:
 
         elif function_name in self.functions:
             func = self.functions[function_name]
+            local_context = {} 
 
-            local_context = self.context.copy()
             for param, arg in zip(func.parameters, node.arguments or []):
-                local_context[param[0].name] = self.execute(arg)
+                param_name = param[0].name
+                local_context[param_name] = self.execute(arg)
 
-            return self.execute_block_with_context(func.block, local_context)
+            result = self.execute_block_with_context(func.block, local_context)
+
+            return result
 
         else:
             raise Exception(f"Función no encontrada: {function_name}")
@@ -135,27 +137,20 @@ class Interpreter:
 
     def execute_block_with_context(self, block, context):
         previous_context = self.context
-        self.context = context
+        self.context = context 
         result = None
 
         for statement in block.statements:
             result = self.execute(statement)
             if isinstance(statement, ReturnNode):
-                break 
+                result = self.execute(statement.expression)  
+                break  
 
-        self.context = previous_context
-        return result
+        self.context = previous_context  
+        return result if result is not None else None
 
     def execute_return(self, node):
         return self.execute(node.expression)
-
-    def execute_block(self, node):
-        result = None
-        for statement in node.statements:
-            result = self.execute(statement)
-            if isinstance(statement, ReturnNode):
-                return result
-        return result
 
     def execute_array(self, node):
         return [self.execute(element) for element in node.elements]
@@ -196,7 +191,7 @@ class Interpreter:
                 value = "" if node.var_type == 'EILEEN' else 0
             self.context[identifier.name] = value
         return None
-
+    
     def _get_base_identifier_name(self, node):
         current_node = node
         while isinstance(current_node, BinaryOpNode) and current_node.operator == 'INDEX':
@@ -209,8 +204,11 @@ class Interpreter:
     def execute_binary_op(self, node):
         if node.operator in ['ASSIGN', 'ARROW_ASSIGN']:
             right_value = self.execute(node.right)
-
+            if right_value is None:
+                raise Exception(f"Error en la línea {node.line_number}: No se puede asignar un valor no inicializado a '{node.left}'.")
             if isinstance(node.left, IdentifierNode):
+                if self.env.get_variable_type(node.left.name) == 'Blood':
+                    right_value = bool(right_value)
                 self.context[node.left.name] = right_value
                 return right_value
 
@@ -220,15 +218,14 @@ class Interpreter:
                 if array is None:
                     raise Exception(f"Variable no definida: {base_name}")
 
-                if isinstance(array[0], list):
-                    row_index = self.execute(node.left.left.right)
-                    col_index = self.execute(node.left.right)
+                if isinstance(array[0], list):  
+                    row_index = int(self.execute(node.left.left.right))
+                    col_index = int(self.execute(node.left.right))
                     if not (0 <= row_index < len(array)) or not (0 <= col_index < len(array[0])):
                         raise Exception(f"Índice fuera de rango en la matriz '{base_name}'")
                     array[row_index][col_index] = right_value
-
                 else:  
-                    index = self.execute(node.left.right)
+                    index = int(self.execute(node.left.right))
                     if not (0 <= index < len(array)):
                         raise Exception(f"Índice fuera de rango en el vector '{base_name}'")
                     array[index] = right_value
@@ -241,29 +238,47 @@ class Interpreter:
             if array is None:
                 raise Exception(f"Variable no definida: {base_name}")
 
-            if isinstance(array[0], list):  
-                row_index = self.execute(node.left.right)
-                col_index = self.execute(node.right)
+            if isinstance(array[0], list): 
+                row_index = int(self.execute(node.left.right))
+                col_index = int(self.execute(node.right))
                 if not (0 <= row_index < len(array)) or not (0 <= col_index < len(array[0])):
                     raise Exception(f"Índice fuera de rango en la matriz '{base_name}'")
                 return array[row_index][col_index]
-
-            else:  
-                index = self.execute(node.right)
+            else: 
+                index = int(self.execute(node.right))
                 if not (0 <= index < len(array)):
                     raise Exception(f"Índice fuera de rango en el vector '{base_name}'")
                 return array[index]
 
         left_value = self.execute(node.left)
         right_value = self.execute(node.right)
-        if node.operator in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
+
+        if node.operator == 'BLOODBOND':  
+            return bool(left_value) and bool(right_value)
+        elif node.operator == 'OLDBLOOD':  
+            return bool(left_value) or bool(right_value)
+        elif node.operator == 'VILEBLOOD': 
+            return not bool(right_value)
+
+        if node.operator == 'EQUAL':
+            return left_value == right_value
+        elif node.operator == 'NOT':
+            return left_value != right_value
+
+        elif node.operator == 'GREATER':
+            return left_value > right_value
+        elif node.operator == 'LESS':
+            return left_value < right_value
+        elif node.operator == 'GREATEREQUAL':
+            return left_value >= right_value
+        elif node.operator == 'LESSEQUAL':
+            return left_value <= right_value
+
+        elif node.operator in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
             return self._execute_arithmetic_op(node.operator, left_value, right_value)
-        if node.operator in ['EQUAL', 'NOT', 'GREATER', 'LESS', 'GREATEREQUAL', 'LESSEQUAL']:
-            return self._execute_comparison_op(node.operator, left_value, right_value)
-        if node.operator in ['BLOODBOND', 'OLDBLOOD', 'VILEBLOOD']:
-            return self._execute_logical_op(node.operator, left_value, right_value)
 
         raise Exception(f"Operador no soportado: {node.operator}")
+
 
     def _execute_arithmetic_op(self, operator, left_value, right_value):
         if operator == 'PLUS':
@@ -293,11 +308,11 @@ class Interpreter:
 
     def _execute_logical_op(self, operator, left_value, right_value):
         if operator == 'BLOODBOND':  
-            return left_value and right_value
-        elif operator == 'OLDBLOOD':  
-            return left_value or right_value
-        elif operator == 'VILEBLOOD': 
-            return not right_value
+            return bool(left_value) and bool(right_value)
+        elif operator == 'OLDBLOOD': 
+            return bool(left_value) or bool(right_value)
+        elif operator == 'VILEBLOOD':
+            return not bool(right_value)
         raise Exception(f"Operador lógico no soportado: {operator}")
 
     def execute_unary_op(self, node):
@@ -308,23 +323,57 @@ class Interpreter:
             raise Exception(f"Operador unario no soportado: {node.operator}")
 
     def execute_if_statement(self, node):
-        condition_value = self.execute(node.condition)
-        if condition_value:
-            self.execute(node.true_block)
-        elif node.false_block:
-            self.execute(node.false_block)
+        condition_met = False  
+
+        if self.execute(node.condition):
+            if node.true_block is not None: 
+                self.execute(node.true_block)
+            condition_met = True
+            return 
+
+        current_node = node
+        while isinstance(current_node.false_block, IfStatementNode):
+            current_node = current_node.false_block
+            if self.execute(current_node.condition):
+                if current_node.true_block is not None: 
+                    self.execute(current_node.true_block)
+                condition_met = True
+                return  
+
+        if not condition_met and current_node.false_block is not None:
+            self.execute(current_node.false_block)
 
     def execute_loop(self, node):
-        if isinstance(node.init, DeclarationNode):
-            self.execute_declaration(node.init)
-        elif node.init:
-            self.execute(node.init) 
+        try:
+            if node.init:
+                self.execute(node.init)
+            
+            if node.condition is None:
+                raise Exception("La condición del bucle no está definida.")
 
-        while self.execute(node.condition):
-            self.execute(node.block) 
+            while self.execute(node.condition):
+                self.execute(node.block)
 
-            if node.increment:
-                self.execute(node.increment) 
+                if node.increment:
+                    self.execute(node.increment)
+
+        except Exception as e:
+            line_info = f"en la línea {node.line_number}" if node.line_number else "en una línea desconocida"
+            raise Exception(f"Error en el bucle {line_info}: {str(e)}")
 
     def execute_function_declaration(self, node):
-            self.functions[node.name.name] = node
+        if node.name.name in self.functions:
+            raise Exception(f"Función '{node.name.name}' ya ha sido declarada anteriormente.")
+
+        self.functions[node.name.name] = node
+
+    def execute_block(self, node):
+        result = None
+        for statement in node.statements:
+            result = self.execute(statement)
+            if isinstance(statement, ReturnNode):
+                return result
+        return result
+
+
+
