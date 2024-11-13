@@ -25,7 +25,8 @@ export type CodeOptions =
   | 'averageThreeNumbers'
   | 'celsiusToFahrenheit'
   | 'hoursToMinutesAndSeconds'
-  | 'ageInDays';
+  | 'ageInDays'
+  | 'menu';
 
 interface CodeGeneratorProps {
   option: CodeOptions;
@@ -328,17 +329,49 @@ Pray(resultado);
     `Hunter a: Blood => true;
 Hunter b: Blood => false;
 Hunter c: Blood => true;
+Hunter d: Blood => false;
 
-Hunter resultadoAnd: Blood => a Bloodbond c;
-Hunter resultadoOr: Blood => a OldBlood b;
-Hunter resultadoNot: Blood => Vileblood b;
+Hunter resultAnd1: Blood => a Bloodbond b;
+Hunter resultAnd2: Blood => a Bloodbond c;
+Hunter resultAnd3: Blood => b Bloodbond d;
+Hunter resultAnd4: Blood => c Bloodbond d;
 
+Hunter resultOr1: Blood => a OldBlood b;   
+Hunter resultOr2: Blood => a OldBlood c;    
+Hunter resultOr3: Blood => b OldBlood d;   
+Hunter resultOr4: Blood => c OldBlood d;  
+
+Hunter resultNot1: Blood => Vileblood a;   
+Hunter resultNot2: Blood => Vileblood b;    
+Hunter resultNot3: Blood => Vileblood c;    
+Hunter resultNot4: Blood => Vileblood d;    
+
+Pray("Resultado de a AND b:");
+Pray(resultAnd1);
 Pray("Resultado de a AND c:");
-Pray(resultadoAnd);
+Pray(resultAnd2);
+Pray("Resultado de b AND d:");
+Pray(resultAnd3);
+Pray("Resultado de c AND d:");
+Pray(resultAnd4);
+
 Pray("Resultado de a OR b:");
-Pray(resultadoOr);
+Pray(resultOr1);
+Pray("Resultado de a OR c:");
+Pray(resultOr2);
+Pray("Resultado de b OR d:");
+Pray(resultOr3);
+Pray("Resultado de c OR d:");
+Pray(resultOr4);
+
+Pray("Resultado de NOT a:");
+Pray(resultNot1);
 Pray("Resultado de NOT b:");
-Pray(resultadoNot);
+Pray(resultNot2);
+Pray("Resultado de NOT c:");
+Pray(resultNot3);
+Pray("Resultado de NOT d:");
+Pray(resultNot4);
 `,
   arrayModification:
     `Hunter numeros: Maria[3] => [1, 2, 3];
@@ -425,6 +458,30 @@ Hunter diasVividos: Maria => edadEnDias(edad);
 Pray("Días vividos aproximadamente:");
 Pray(diasVividos);
 
+`,
+menu:
+`Hunter opcion: Maria;
+
+Pray("Ingresa una opción (1-7):");
+Eyes(opcion);
+
+Insight (opcion == 1) {
+  Pray("Opción 1 seleccionada: Ver detalles del usuario.");
+} Madness Insight (opcion == 2) {
+  Pray("Opción 2 seleccionada: Configuración del sistema.");
+} Madness Insight (opcion == 3) {
+  Pray("Opción 3 seleccionada: Ejecutar operación especial.");
+} Madness Insight (opcion == 4) {
+  Pray("Opción 4 seleccionada: Guardar cambios.");
+} Madness Insight (opcion == 5) {
+  Pray("Opción 5 seleccionada: Cerrar sesión.");
+} Madness Insight (opcion == 6) {
+  Pray("Opción 6 seleccionada: Imprimir reporte.");
+} Madness Insight (opcion == 7) {
+  Pray("Opción 7 seleccionada: Salir del sistema.");
+} Madness {
+  Pray("Opción no válida: La opción seleccionada está fuera del rango permitido.");
+}
 `,
 };
 

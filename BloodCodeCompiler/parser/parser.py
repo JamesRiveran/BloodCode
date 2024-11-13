@@ -115,8 +115,11 @@ class Parser:
         self.check_token_type('IDENTIFIER')
         name = self.current_token.value
         line_number = self.current_token.line_number
+        if not any(name in scope for scope in self.env.scopes):  
+            raise Exception(f"Error en línea {line_number}: El identificador '{name}' no ha sido declarado en ningún ámbito.")
         self.consume_token()
         return IdentifierNode(name, line_number)
+
         
     @error_handler
     def parse_function_declaration(self):
@@ -168,12 +171,14 @@ class Parser:
         return FunctionCallNode('EYES', [identifier], self.current_token.line_number)
 
     def parse_dream_loop(self):
+        line_number = self.current_token.line_number
         self.validate_and_consume_token('DREAM')
         self.validate_and_consume_token('LPAREN')
         condition = self.parse_expression()
         self.validate_and_consume_token('RPAREN')
-        block = self.parse_block()  
-        return LoopNode(None, condition, None, block, self.current_token.line_number)
+        block = self.parse_block()
+        return LoopNode(None, condition, None, block, line_number)
+
 
     def parse_assignment_or_expression(self):
         identifier = self.parse_identifier()
@@ -252,11 +257,31 @@ class Parser:
         self.validate_and_consume_token('RPAREN')
         true_block = self.parse_block()
         false_block = None
-        if self.current_token.type == 'MADNESS':
+        current_if_node = IfStatementNode(condition, true_block, false_block)
+        root_if_node = current_if_node 
+
+        while self.current_token.type == 'MADNESS':
             self.consume_token()
-            false_block = self.parse_block()
-        return IfStatementNode(condition, true_block, false_block, self.current_token.line_number)
-    
+
+            if self.current_token.type == 'INSIGHT':
+                self.consume_token()
+                self.validate_and_consume_token('LPAREN')
+                next_condition = self.parse_expression()
+                self.validate_and_consume_token('RPAREN')
+                next_true_block = self.parse_block()
+
+                next_if_node = IfStatementNode(next_condition, next_true_block, None)
+
+                current_if_node.false_block = next_if_node
+                current_if_node = next_if_node  
+
+            else:
+                final_else_block = self.parse_block()
+                current_if_node.false_block = final_else_block
+                break
+
+        return root_if_node 
+
     @error_handler
     def parse_primary(self):
         if self.current_token.type == 'NUMBER':
@@ -307,22 +332,16 @@ class Parser:
         return BinaryOpNode(identifier, 'INDEX', index1, identifier.line_number)
 
     def parse_nightmare_loop(self):
+        line_number = self.current_token.line_number
         self.validate_and_consume_token('NIGHTMARE')
         self.validate_and_consume_token('LPAREN')
-        
-        if self.current_token.type == 'HUNTER':
-            init = self.parse_declaration() 
-        else:
-            init = self.parse_assignment_or_expression()  
-
+        init = self.parse_assignment_or_expression() if self.current_token.type != 'HUNTER' else self.parse_declaration()
         condition = self.parse_expression()
         self.validate_and_consume_token('SEMICOLON')
         increment = self.parse_assignment_or_expression()
         self.validate_and_consume_token('RPAREN')
-
         block = self.parse_block()
-        return LoopNode(init, condition, increment, block, self.current_token.line_number)
-
+        return LoopNode(init, condition, increment, block, line_number)
 
     def parse_pray(self):
         self.validate_and_consume_token('PRAY')

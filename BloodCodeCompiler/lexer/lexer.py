@@ -22,7 +22,7 @@ class Lexer:
         self.code = code
         self.tokens = []
         self.position = 0
-        self.line_number = 1  # Iniciar el contador de líneas
+        self.line_number = 1 
 
     def tokenize(self):
         while self.position < len(self.code):
@@ -33,9 +33,8 @@ class Lexer:
                 if match:
                     text = match.group(0)
                     if token_type == 'WHITESPACE':
-                        self.line_number += text.count('\n')  # Contar nuevas líneas
+                        self.line_number += text.count('\n')  
                     elif token_type != 'WHITESPACE':
-                        # Crear un nuevo objeto Token y agregarlo a la lista de tokens
                         self.tokens.append(Token(token_type, text, self.line_number))
                     self.position = match.end(0)
                     break

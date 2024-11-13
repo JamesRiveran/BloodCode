@@ -167,7 +167,10 @@ class SemanticAnalyzer:
 
             elif isinstance(node.left, BinaryOpNode) and node.left.operator == 'INDEX':
                 base_identifier_name = self._get_base_identifier_name(node.left)
-                array_type = self.env.get_variable_type(base_identifier_name)
+                try:
+                    array_type = self.env.get_variable_type(base_identifier_name)
+                except Exception as e:
+                    raise SemanticError(str(e), node)
 
                 if not isinstance(array_type, tuple) or array_type[1] not in ['ARRAY', 'MATRIX']:
                     raise SemanticError(f"Acceso inválido: '{base_identifier_name}' no es un array o matriz", node)
@@ -188,6 +191,7 @@ class SemanticAnalyzer:
             return self._analyze_logical_op(left_type, right_type, node)
 
         raise SemanticError(f"Operador no soportado: {node.operator}", node)
+
 
     def _analyze_index_op(self, node):
         base_identifier_name = self._get_base_identifier_name(node.left)
@@ -294,8 +298,25 @@ class SemanticAnalyzer:
     def analyze_function_call(self, node):
         if node.identifier in ['PRAY', 'EYES']:
             return self._analyze_builtin_function_call(node)
-        
-        return self._analyze_user_defined_function_call(node)
+
+        func_type = self.env.get_function_type(node.identifier.name)
+        param_types, return_type = func_type
+
+        if len(node.arguments or []) != len(param_types):
+            raise SemanticError(
+                f"La función '{node.identifier.name}' espera {len(param_types)} argumentos, pero se encontraron {len(node.arguments or [])}",
+                node
+            )
+
+        for i, (arg, expected_type) in enumerate(zip(node.arguments, param_types)):
+            arg_type = self.analyze(arg).upper()
+            expected_type = expected_type.upper()
+            if arg_type != expected_type:
+                raise SemanticError(f"Argumento {i+1} de la función '{node.identifier.name}' esperaba '{expected_type}', pero se encontró '{arg_type}'", node)
+
+        return return_type.upper()
+
+
 
     def _analyze_user_defined_function_call(self, node):
         func_type = self.env.get_function_type(node.identifier.name)
@@ -323,17 +344,29 @@ class SemanticAnalyzer:
     def analyze_if_statement(self, node):
         condition_type = self.analyze(node.condition)
         if condition_type != 'BLOOD':
-            raise Exception(f"Error de tipo: La condición en un 'if' debe ser de tipo 'BLOOD'")
+            raise SemanticError("La condición en un 'Insight' debe ser de tipo 'BLOOD'", node.condition)
+        
         self.analyze(node.true_block)
-        if node.false_block:
-            self.analyze(node.false_block)
+        
+        current_node = node
+        while current_node.false_block:
+            if isinstance(current_node.false_block, IfStatementNode):
+                current_node = current_node.false_block
+                condition_type = self.analyze(current_node.condition)
+                if condition_type != 'BLOOD':
+                    raise SemanticError("La condición en un 'Madness Insight' debe ser de tipo 'BLOOD'", current_node.condition)
+                self.analyze(current_node.true_block)
+            else:
+                self.analyze(current_node.false_block)
+                break
 
     @semantic_error_handler
     def analyze_loop(self, node):
-        if isinstance(node.init, DeclarationNode):
-            self.analyze_declaration(node.init)
-        elif node.init:
+        if node.init:
             self.analyze(node.init)
+
+        if not node.condition:
+            raise SemanticError("El bucle debe tener una condición de tipo 'BLOOD'", node)
 
         condition_type = self.analyze(node.condition)
         if condition_type != 'BLOOD':
@@ -343,6 +376,7 @@ class SemanticAnalyzer:
 
         if node.increment:
             self.analyze(node.increment)
+
 
     @semantic_error_handler
     def analyze_unary_op(self, node):
@@ -355,12 +389,11 @@ class SemanticAnalyzer:
         else:
             raise SemanticError(f"Operador unario no soportado: {node.operator}", node)
 
-    @semantic_error_handler
     def analyze_function_declaration(self, node):
         param_types = [param_type for _, param_type in node.parameters]
         return_type = node.return_type.upper() 
         self.env.declare_function(node.name.name, param_types, return_type)
-        self.env.enter_scope()
+        self.env.enter_scope() 
 
         for param_name, param_type in node.parameters:
             self.env.declare_variable(param_name.name, param_type)
@@ -370,6 +403,7 @@ class SemanticAnalyzer:
         if return_type != 'ROM': 
             if not self.has_return(node.block):
                 raise SemanticError(f"La función '{node.name.name}' debe tener una instrucción de retorno de tipo '{return_type}'", node)
+
         self.env.exit_scope()
 
 

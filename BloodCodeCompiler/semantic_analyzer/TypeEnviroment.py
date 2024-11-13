@@ -20,8 +20,11 @@ class TypeEnvironment:
     def get_variable_type(self, name):
         for scope in reversed(self.scopes):
             if name in scope:
-                return scope[name]
-        raise Exception(f"Variable '{name}' no ha sido declarada")
+                var_type = scope[name]
+                if var_type is None:
+                    raise Exception(f"Error: La variable '{name}' se ha declarado, pero no se ha inicializado.")
+                return var_type
+        raise Exception(f"Variable '{name}' no ha sido declarada en los ámbitos disponibles. Verifica la declaración antes de su uso.")
 
     def declare_function(self, name, param_types, return_type):
         if name in self.functions:
