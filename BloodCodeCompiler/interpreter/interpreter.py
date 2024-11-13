@@ -100,7 +100,7 @@ class Interpreter:
 
         elif function_name in self.functions:
             func = self.functions[function_name]
-            local_context = {} 
+            local_context = {}
 
             for param, arg in zip(func.parameters, node.arguments or []):
                 param_name = param[0].name
@@ -108,7 +108,10 @@ class Interpreter:
 
             result = self.execute_block_with_context(func.block, local_context)
 
-            return result
+            if result is None and func.return_type != 'Rom':
+                raise Exception(f"La función '{function_name}' no retornó un valor.")
+
+            return result if result is not None else 0  
 
         else:
             raise Exception(f"Función no encontrada: {function_name}")
@@ -273,7 +276,10 @@ class Interpreter:
             return left_value >= right_value
         elif node.operator == 'LESSEQUAL':
             return left_value <= right_value
-
+        elif node.operator == 'MULTIPLY':
+            if left_value is None or right_value is None:
+                raise Exception(f"Valor inesperado 'None' en la recursión: left_value={left_value}, right_value={right_value}")
+            return left_value * right_value
         elif node.operator in ['PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE']:
             return self._execute_arithmetic_op(node.operator, left_value, right_value)
 
@@ -323,25 +329,27 @@ class Interpreter:
             raise Exception(f"Operador unario no soportado: {node.operator}")
 
     def execute_if_statement(self, node):
-        condition_met = False  
+        print(f"Evaluando IF: condición -> {node.condition}")
+        result = None
 
         if self.execute(node.condition):
-            if node.true_block is not None: 
-                self.execute(node.true_block)
-            condition_met = True
-            return 
+            if node.true_block is not None:
+                result = self.execute(node.true_block)
+                return result
+        else:
+            current_node = node
+            while isinstance(current_node.false_block, IfStatementNode):
+                current_node = current_node.false_block
+                if self.execute(current_node.condition):
+                    if current_node.true_block is not None:
+                        result = self.execute(current_node.true_block)
+                    return result
 
-        current_node = node
-        while isinstance(current_node.false_block, IfStatementNode):
-            current_node = current_node.false_block
-            if self.execute(current_node.condition):
-                if current_node.true_block is not None: 
-                    self.execute(current_node.true_block)
-                condition_met = True
-                return  
+            if current_node.false_block:
+                result = self.execute(current_node.false_block)
 
-        if not condition_met and current_node.false_block is not None:
-            self.execute(current_node.false_block)
+        print(f"Resultado del IF: {result}")
+        return result if result is not None else 0  
 
     def execute_loop(self, node):
         try:
