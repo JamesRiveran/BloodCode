@@ -149,6 +149,68 @@ export const CodeOptionsComponent: React.FC<CodeOptionsProps> = ({
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+          <DropdownMenuSub>
+          <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="flex justify-between items-center w-full text-left px-4 py-2 hover:bg-secondary-dark focus:bg-secondary group">
+              Manejo de Vectores
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="bg-color-gray-800 text-gray-100 border-gray-700">
+            <DropdownMenuItem onClick={() => handleOptionClick("arrayMaxValue")} className="hover:bg-secondary focus:bg-secondary">
+              Mayor en un Vector
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("vectorMinValue")} className="hover:bg-secondary focus:bg-secondary">
+              Menor en un Vector
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("vectorAverage")} className="hover:bg-secondary focus:bg-secondary">
+              Promedio de un Vector
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("vectorMaxPosition")} className="hover:bg-secondary focus:bg-secondary">
+              Mayor en un Vector y su Posición
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("productDotVectors")} className="hover:bg-secondary focus:bg-secondary">
+              Producto Punto de Dos Vectores
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("interchangeExtremes")} className="hover:bg-secondary focus:bg-secondary">
+              Intercambiar Extremos de un Vector
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="flex justify-between items-center w-full text-left px-4 py-2 hover:bg-secondary-dark focus:bg-secondary group">
+          Manejo de Matrices
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent className="bg-color-gray-800 text-gray-100 border-gray-700">
+            <DropdownMenuItem onClick={() => handleOptionClick("matrixMaxValue")} className="hover:bg-secondary focus:bg-secondary">
+              Mayor en una Matriz
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("matrixAverage")} className="hover:bg-secondary focus:bg-secondary">
+              Promedio de los Elementos de una Matriz
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("sumMatrixRow")} className="hover:bg-secondary focus:bg-secondary">
+              Suma de Fila de Matriz
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("sumMatrixRows")} className="hover:bg-secondary focus:bg-secondary">
+              Suma de Elementos por Filas
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("sumMatrixRowsColumns")} className="hover:bg-secondary focus:bg-secondary">
+              Sumar Filas y Columnas de Matriz
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("diagonalSum")} className="hover:bg-secondary focus:bg-secondary">
+              Suma de Diagonal Principal
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("diagonalSecondary")} className="hover:bg-secondary focus:bg-secondary">
+              Imprimir Diagonal Secundaria
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("matrixMinMax")} className="hover:bg-secondary focus:bg-secondary">
+              Elemento Mínimo y Máximo en una Matriz
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOptionClick("diagonalComparison")} className="hover:bg-secondary focus:bg-secondary">
+              Suma de Diagonales y Comparación
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        </DropdownMenuSub>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
