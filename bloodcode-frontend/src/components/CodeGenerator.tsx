@@ -26,7 +26,23 @@ export type CodeOptions =
   | 'celsiusToFahrenheit'
   | 'hoursToMinutesAndSeconds'
   | 'ageInDays'
-  | 'menu';
+  | 'menu'
+  | 'productDotVectors'
+  | 'vectorMinValue'
+  | 'sumMatrixRows'
+  | 'matrixAverage'
+  | 'diagonalSum'
+  | 'sumMatrixRow'
+  | 'matrixMaxValue'
+  | 'arrayMaxValue'
+  | 'interchangeExtremes'
+  | 'diagonalSecondary'
+  | 'matrixMinMax'
+  | 'diagonalComparison'
+  | 'vectorAverage'
+  | 'vectorMaxPosition'
+  | 'sumMatrixRowsColumns'
+  ;
 
 interface CodeGeneratorProps {
   option: CodeOptions;
@@ -266,18 +282,22 @@ Insight (num1 > num2 Bloodbond num1 == 10) {
 }
 `,
   nestedLoops:
-    `Hunter matriz: Maria[3].[3] => [
-  [1, 2, 3],
-  [4, 5, 6],
-  [7, 8, 9]
-];
+    `Hunter matriz: Maria[2].[2];
+matriz[0].[0] => 1;
+matriz[0].[1] => 2;
+matriz[1].[0] => 3;
+matriz[1].[1] => 4;
 
-Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
-  Nightmare (Hunter j: Maria => 0; j < 3; j => j + 1;) {
-    Pray("Elemento en posición:");
-    Pray("Fila: " + i + ", Columna: " + j + " = " + matriz[i].[j]);
+Hunter suma: Maria => 0;
+
+Nightmare (Hunter i: Maria => 0; i < 2; i => i + 1;) {
+  Nightmare (Hunter j: Maria => 0; j < 2; j => j + 1;) {
+    suma => suma + matriz[i].[j];
   }
 }
+
+Pray("La suma de los elementos de la matriz es:");
+Pray(suma);
 `,
   recursiveFunction:
     `GreatOnes factorial(n: Maria): Maria {
@@ -481,6 +501,340 @@ Insight (opcion == 1) {
   Pray("Opción 7 seleccionada: Salir del sistema.");
 } Madness {
   Pray("Opción no válida: La opción seleccionada está fuera del rango permitido.");
+}
+`,
+arrayMaxValue:
+    `Hunter numeros: Maria[5] => [5, 3, 8, 1, 4];
+Hunter mayor: Maria => numeros[0];
+
+Nightmare (Hunter i: Maria => 1; i < 5; i => i + 1;) {
+  Insight (numeros[i] > mayor) {
+    mayor => numeros[i];
+  }
+}
+
+Pray("El número mayor en el array es:");
+Pray(mayor);
+`,
+
+  matrixMaxValue:
+    `Hunter matriz: Maria[3].[3];
+Hunter mayor: Maria => 0;
+
+matriz[0].[0] => 5;
+matriz[0].[1] => 12;
+matriz[0].[2] => 7;
+matriz[1].[0] => 3;
+matriz[1].[1] => 15;
+matriz[1].[2] => 1;
+matriz[2].[0] => 8;
+matriz[2].[1] => 4;
+matriz[2].[2] => 10;
+
+Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
+  Nightmare (Hunter j: Maria => 0; j < 3; j => j + 1;) {
+    Insight (matriz[i].[j] > mayor) {
+      mayor => matriz[i].[j];
+    }
+  }
+}
+
+Pray("El número mayor en la matriz es:");
+Pray(mayor);
+`,
+  sumMatrixRow:
+    `Hunter matriz: Maria[2].[3];
+
+matriz[0].[0] => 5;
+matriz[0].[1] => 10;
+matriz[0].[2] => 15;
+matriz[1].[0] => 20;
+matriz[1].[1] => 25;
+matriz[1].[2] => 30;
+
+Hunter sumaFila: Maria => 0;
+
+Nightmare (Hunter j: Maria => 0; j < 3; j => j + 1;) {
+  sumaFila => sumaFila + matriz[0].[j];
+}
+
+Pray("La suma de los elementos de la primera fila es:");
+Pray(sumaFila);
+`,
+
+  diagonalSum:
+    `Hunter matriz: Maria[3].[3];
+matriz[0].[0] => 3;
+matriz[0].[1] => 5;
+matriz[0].[2] => 7;
+matriz[1].[0] => 2;
+matriz[1].[1] => 4;
+matriz[1].[2] => 6;
+matriz[2].[0] => 1;
+matriz[2].[1] => 8;
+matriz[2].[2] => 9;
+
+Hunter sumaDiagonal: Maria => 0;
+
+Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
+  sumaDiagonal => sumaDiagonal + matriz[i].[i];
+}
+
+Pray("La suma de la diagonal principal es:");
+Pray(sumaDiagonal);
+`,
+
+  matrixAverage:
+    `Hunter matriz: Maria[2].[3];
+Hunter suma: Maria => 0;
+Hunter elementos: Maria => 0;
+
+matriz[0].[0] => 10;
+matriz[0].[1] => 20;
+matriz[0].[2] => 30;
+matriz[1].[0] => 40;
+matriz[1].[1] => 50;
+matriz[1].[2] => 60;
+
+Nightmare (Hunter i: Maria => 0; i < 2; i => i + 1;) {
+  Nightmare (Hunter j: Maria => 0; j < 3; j => j + 1;) {
+    suma => suma + matriz[i].[j];
+    elementos => elementos + 1;
+  }
+}
+
+Hunter promedio: Maria => suma / elementos;
+
+Pray("El promedio de los elementos de la matriz es:");
+Pray(promedio);
+`,
+
+  sumMatrixRows:
+    `Hunter matriz: Maria[3].[3];
+matriz[0].[0] => 1;
+matriz[0].[1] => 2;
+matriz[0].[2] => 3;
+matriz[1].[0] => 4;
+matriz[1].[1] => 5;
+matriz[1].[2] => 6;
+matriz[2].[0] => 7;
+matriz[2].[1] => 8;
+matriz[2].[2] => 9;
+
+Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
+  Hunter sumaFila: Maria => 0;
+  Nightmare (Hunter j: Maria => 0; j < 3; j => j + 1;) {
+    sumaFila => sumaFila + matriz[i].[j];
+  }
+  Pray("Suma de la fila: ");
+  Pray(sumaFila);
+}
+`,
+
+  vectorMinValue:
+    `Hunter vector: Maria[5];
+vector[0] => 12;
+vector[1] => 7;
+vector[2] => 25;
+vector[3] => 3;
+vector[4] => 18;
+
+Hunter menor: Maria => vector[0];
+
+Nightmare (Hunter i: Maria => 1; i < 5; i => i + 1;) {
+  Insight (vector[i] < menor) {
+    menor => vector[i];
+  }
+}
+
+Pray("El menor elemento del vector es:");
+Pray(menor);
+`,
+
+  productDotVectors:
+    `Hunter vectorA: Maria[3];
+Hunter vectorB: Maria[3];
+
+vectorA[0] => 2;
+vectorA[1] => 4;
+vectorA[2] => 6;
+
+vectorB[0] => 1;
+vectorB[1] => 3;
+vectorB[2] => 5;
+
+Hunter productoPunto: Maria => 0;
+
+Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
+  productoPunto => productoPunto + (vectorA[i] * vectorB[i]);
+}
+
+Pray("El producto punto entre los dos vectores es:");
+Pray(productoPunto);
+`,
+interchangeExtremes:
+`Hunter vector: Maria[5];
+vector[0] => 10;
+vector[1] => 20;
+vector[2] => 30;
+vector[3] => 40;
+vector[4] => 50;
+
+Hunter temp: Maria => vector[0];
+vector[0] => vector[4];
+vector[4] => temp;
+
+Pray("Vector después de intercambiar los extremos:");
+Nightmare (Hunter i: Maria => 0; i < 5; i => i + 1;) {
+  Pray(vector[i]);
+}
+`,
+diagonalSecondary:
+`Hunter matriz: Maria[3].[3];
+matriz[0].[0] => 1;
+matriz[0].[1] => 2;
+matriz[0].[2] => 3;
+matriz[1].[0] => 4;
+matriz[1].[1] => 5;
+matriz[1].[2] => 6;
+matriz[2].[0] => 7;
+matriz[2].[1] => 8;
+matriz[2].[2] => 9;
+
+Pray("Elementos de la diagonal secundaria:");
+Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
+  Pray(matriz[i].[2 - i]);
+}
+`,
+matrixMinMax:
+`Hunter matriz: Maria[3].[3];
+matriz[0].[0] => 12;
+matriz[0].[1] => 7;
+matriz[0].[2] => 15;
+matriz[1].[0] => 9;
+matriz[1].[1] => 20;
+matriz[1].[2] => 5;
+matriz[2].[0] => 3;
+matriz[2].[1] => 14;
+matriz[2].[2] => 8;
+
+Hunter minimo: Maria => matriz[0].[0];
+Hunter maximo: Maria => matriz[0].[0];
+
+Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
+  Nightmare (Hunter j: Maria => 0; j < 3; j => j + 1;) {
+    Insight (matriz[i].[j] < minimo) {
+      minimo => matriz[i].[j];
+    }
+    Insight (matriz[i].[j] > maximo) {
+      maximo => matriz[i].[j];
+    }
+  }
+}
+
+Pray("El elemento mínimo de la matriz es:");
+Pray(minimo);
+Pray("El elemento máximo de la matriz es:");
+Pray(maximo);
+`,
+diagonalComparison:
+`Hunter matriz: Maria[3].[3];
+matriz[0].[0] => 5;
+matriz[0].[1] => 2;
+matriz[0].[2] => 3;
+matriz[1].[0] => 1;
+matriz[1].[1] => 6;
+matriz[1].[2] => 4;
+matriz[2].[0] => 7;
+matriz[2].[1] => 8;
+matriz[2].[2] => 9;
+
+Hunter sumaPrincipal: Maria => 0;
+Hunter sumaSecundaria: Maria => 0;
+
+Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
+  sumaPrincipal => sumaPrincipal + matriz[i].[i];
+  sumaSecundaria => sumaSecundaria + matriz[i].[2 - i];
+}
+
+Pray("Suma de la diagonal principal:");
+Pray(sumaPrincipal);
+Pray("Suma de la diagonal secundaria:");
+Pray(sumaSecundaria);
+
+Insight (sumaPrincipal > sumaSecundaria) {
+  Pray("La diagonal principal es mayor.");
+} Madness Insight (sumaSecundaria > sumaPrincipal) {
+  Pray("La diagonal secundaria es mayor.");
+} Madness {
+  Pray("Ambas diagonales son iguales.");
+}
+`,
+vectorAverage:
+`Hunter vector: Maria[5];
+vector[0] => 10;
+vector[1] => 20;
+vector[2] => 30;
+vector[3] => 40;
+vector[4] => 50;
+
+Hunter suma: Maria => 0;
+
+Nightmare (Hunter i: Maria => 0; i < 5; i => i + 1;) {
+  suma => suma + vector[i];
+}
+
+Hunter promedio: Maria => suma / 5;
+
+Pray("El promedio de los elementos del vector es:");
+Pray(promedio);
+`,
+vectorMaxPosition:
+`Hunter vector: Maria[5];
+vector[0] => 12;
+vector[1] => 7;
+vector[2] => 25;
+vector[3] => 3;
+vector[4] => 18;
+
+Hunter mayor: Maria => vector[0];
+Hunter posicionMayor: Maria => 0;
+
+Nightmare (Hunter i: Maria => 1; i < 5; i => i + 1;) {
+  Insight (vector[i] > mayor) {
+    mayor => vector[i];
+    posicionMayor => i;
+  }
+}
+
+Pray("El mayor elemento está en la posición:");
+Pray(posicionMayor);
+`,
+sumMatrixRowsColumns:
+`Hunter matriz: Maria[3].[3];
+matriz[0].[0] => 3;
+matriz[0].[1] => 5;
+matriz[0].[2] => 7;
+matriz[1].[0] => 2;
+matriz[1].[1] => 4;
+matriz[1].[2] => 6;
+matriz[2].[0] => 1;
+matriz[2].[1] => 8;
+matriz[2].[2] => 9;
+
+Nightmare (Hunter i: Maria => 0; i < 3; i => i + 1;) {
+  Hunter sumaFila: Maria => 0;
+  Hunter sumaColumna: Maria => 0;
+
+  Nightmare (Hunter j: Maria => 0; j < 3; j => j + 1;) {
+    sumaFila => sumaFila + matriz[i].[j];
+    sumaColumna => sumaColumna + matriz[j].[i];
+  }
+
+  Pray("Suma de la fila: ");
+  Pray(sumaFila);
+  Pray("Suma de la columna: ");
+  Pray(sumaColumna);
 }
 `,
 };
