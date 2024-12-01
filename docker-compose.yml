@@ -1,0 +1,24 @@
+services:
+  backend:
+    image: python:3.9-slim  # Usar una imagen oficial de Python
+    working_dir: /app        # Establecer el directorio de trabajo
+    volumes:
+      - ./BloodCodeCompiler:/app  # Montar el código del backend
+    command: sh -c "pip install -r requirements.txt && python app.py"  # Instalar dependencias y ejecutar 
+    ports:
+      - '5000:5000'          # Exponer el puerto del backend
+    environment:
+      - FLASK_ENV=development  # Ajusta según tu framework
+
+  frontend:
+    image: node:22-alpine     # Usar una imagen oficial de Node.js
+    working_dir: /app         # Establecer el directorio de trabajo
+    volumes:
+      - ./bloodcode-frontend:/app  # Montar el código del frontend
+    command: sh -c "npm install && npm run dev"  # Instalar dependencias y ejecutar
+    ports:
+      - '3000:3000'           # Exponer el puerto del frontend
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
